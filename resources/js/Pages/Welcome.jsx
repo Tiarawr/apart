@@ -10,30 +10,16 @@ import {
     Home,
 } from "lucide-react";
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
-    const apartments = [
-        {
-            id: 1,
-            name: "Malioboro co-living",
-            location: "800 m dari Malioboro",
-            price: "Rp 450 rb/malam",
-            image: "https://placehold.co/707x434",
-        },
-        {
-            id: 2,
-            name: "Soedirman Apart",
-            location: "Jl. Sudirman",
-            price: "Rp 550 rb/malam",
-            image: "https://placehold.co/707x434",
-        },
-        {
-            id: 3,
-            name: "Seturan Cozy Loft",
-            location: "Dekat UGM",
-            price: "Rp 440 rb/malam",
-            image: "https://placehold.co/707x434",
-        },
-    ];
+export default function Welcome({ apartments = [] }) {
+    // Take first 3 apartments from backend data
+    const featuredApartments = apartments.slice(0, 3).map(apartment => ({
+        ...apartment,
+        price: new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(apartment.price) + "/malam"
+    }));
 
     return (
         <>
@@ -42,7 +28,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 className="min-h-screen bg-white font-['Poppins']"
                 data-theme="light"
             >
-                <Header auth={auth} />
+                <Header />
 
                 {/* Hero Section */}
                 <section className="relative overflow-hidden bg-white pt-20 lg:pt-24">
@@ -72,15 +58,14 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </p>
 
                             {/* Stats */}
-                            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-10 max-w-md mx-auto">
-                                <div className="text-center">
-                                    <div className="text-2xl md:text-3xl font-bold text-black">
-                                        3+
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        Apartemen
-                                    </div>
+                            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-10 max-w-md mx-auto">                            <div className="text-center">
+                                <div className="text-2xl md:text-3xl font-bold text-black">
+                                    {apartments.length}+
                                 </div>
+                                <div className="text-sm text-gray-600">
+                                    Apartemen
+                                </div>
+                            </div>
                                 <div className="text-center">
                                     <div className="text-2xl md:text-3xl font-bold text-black">
                                         24/7
@@ -108,10 +93,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     Lihat Apartemen
                                 </Link>
                                 <Link
-                                    href={route("register")}
+                                    href="/contact"
                                     className="border border-black text-black px-8 py-3 rounded-lg font-medium min-w-[200px] hover:bg-black hover:text-white transition-all duration-300"
                                 >
-                                    Daftar Sekarang
+                                    Hubungi Kami
                                 </Link>
                             </div>
                         </div>
@@ -207,7 +192,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {apartments.map((apartment, index) => (
+                        {featuredApartments.map((apartment, index) => (
                             <div
                                 key={apartment.id}
                                 className="transform transition-all duration-300 hover:scale-105"

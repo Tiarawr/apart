@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import Header from "@/Components/Header";
 import { useState, useEffect } from "react";
 import {
@@ -15,24 +15,69 @@ import {
     SlidersHorizontal,
 } from "lucide-react";
 
-export default function Apartments({ auth, apartments }) {
-    const [guests, setGuests] = useState(4);
+export default function Apartments({ apartments = {}, filters = {} }) {
+    // Handle filters being an array instead of object
+    const safeFilters = Array.isArray(filters) ? {} : filters;
+
+    const [guests, setGuests] = useState(1);
     const [checkIn, setCheckIn] = useState("");
     const [checkOut, setCheckOut] = useState("");
     const [showCheckInPicker, setShowCheckInPicker] = useState(false);
     const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
     const [sortBy, setSortBy] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [filteredApartments, setFilteredApartments] = useState([]);
 
-    // Set default dates
+    // Set default dates and filters
     useEffect(() => {
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        setCheckIn(today.toISOString().split("T")[0]);
-        setCheckOut(tomorrow.toISOString().split("T")[0]);
-    }, []);
+        // Set default dates if not provided
+        if (!checkIn) setCheckIn(today.toISOString().split("T")[0]);
+        if (!checkOut) setCheckOut(tomorrow.toISOString().split("T")[0]);
+
+        // Set filters from URL parameters
+        if (safeFilters && typeof safeFilters === "object") {
+            if (safeFilters.sort) setSortBy(safeFilters.sort);
+            if (safeFilters.search) setSearchQuery(safeFilters.search);
+            if (safeFilters.guests) setGuests(parseInt(safeFilters.guests));
+            if (safeFilters.checkIn) setCheckIn(safeFilters.checkIn);
+            if (safeFilters.checkOut) setCheckOut(safeFilters.checkOut);
+        }
+    }, [safeFilters]);
+
+    // Filter and sort apartments
+    useEffect(() => {
+        let filtered = apartments?.data || [];
+        
+        // Filter by search query
+        if (searchQuery) {
+            filtered = filtered.filter(apartment => 
+                apartment.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                apartment.location.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+        
+        // Sort apartments
+        if (sortBy) {
+            filtered = [...filtered].sort((a, b) => {
+                switch (sortBy) {
+                    case 'asc':
+                        return a.price - b.price;
+                    case 'desc':
+                        return b.price - a.price;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    default:
+                        return 0;
+                }
+            });
+        }
+        
+        setFilteredApartments(filtered);
+    }, [apartments, searchQuery, sortBy]);
 
     // Close date pickers when clicking outside
     useEffect(() => {
@@ -50,8 +95,12 @@ export default function Apartments({ auth, apartments }) {
     }, []);
 
     const formatDate = (dateString) => {
-        if (!dateString) return "";
+        if (!dateString) return "Pilih tanggal";
         const date = new Date(dateString);
+        
+        // Add one day to fix timezone issues
+        date.setDate(date.getDate() + 1);
+        
         const options = {
             weekday: "long",
             year: "numeric",
@@ -61,68 +110,33 @@ export default function Apartments({ auth, apartments }) {
         return date.toLocaleDateString("id-ID", options);
     };
 
-    const apartmentList = apartments || [
-        {
-            id: 1,
-            name: "Malioboro co-living",
-            location: "800 m dari Malioboro",
-            price: "Rp 450 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.8,
-            reviews: 127,
-        },
-        {
-            id: 2,
-            name: "Soedirman Apart",
-            location: "Jl. Sudirman",
-            price: "Rp 550 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.9,
-            reviews: 89,
-        },
-        {
-            id: 3,
-            name: "Seturan Cozy Loft",
-            location: "Dekat UGM",
-            price: "Rp 440 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.7,
-            reviews: 156,
-        },
-        {
-            id: 4,
-            name: "Prawirotaman Heritage",
-            location: "Jl. Prawirotaman",
-            price: "Rp 380 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.6,
-            reviews: 203,
-        },
-        {
-            id: 5,
-            name: "Kaliurang Mountain View",
-            location: "Kaliurang",
-            price: "Rp 650 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.9,
-            reviews: 94,
-        },
-        {
-            id: 6,
-            name: "Tugu Station Apartment",
-            location: "Dekat Stasiun Tugu",
-            price: "Rp 420 rb/malam",
-            priceColor: "#c90d0d",
-            image: "https://placehold.co/707x434",
-            rating: 4.5,
-            reviews: 178,
-        },
-    ];
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(price);
+    };
+
+    // Use filtered apartments
+    const apartmentList = filteredApartments;
+
+    // Handle search button click
+    const handleSearch = () => {
+        // Apply current filters and redirect to update URL
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('search', searchQuery);
+        if (sortBy) params.append('sort', sortBy);
+        if (guests > 1) params.append('guests', guests);
+        if (checkIn) params.append('checkIn', checkIn);
+        if (checkOut) params.append('checkOut', checkOut);
+        
+        const queryString = params.toString();
+        const newUrl = queryString ? `/apartments?${queryString}` : '/apartments';
+        
+        // Use Inertia to navigate with new filters
+        router.visit(newUrl);
+    };
 
     return (
         <>
@@ -131,7 +145,7 @@ export default function Apartments({ auth, apartments }) {
                 className="min-h-screen bg-white font-['Poppins']"
                 data-theme="light"
             >
-                <Header auth={auth} />
+                <Header />
 
                 <div className="px-4 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
                     {/* Page Title */}
@@ -302,7 +316,10 @@ export default function Apartments({ auth, apartments }) {
 
                         {/* Search Button */}
                         <div className="flex justify-center mt-8">
-                            <button className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2">
+                            <button 
+                                onClick={handleSearch}
+                                className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                            >
                                 <Search className="w-5 h-5" />
                                 Cari Apartemen
                             </button>
@@ -366,7 +383,11 @@ export default function Apartments({ auth, apartments }) {
                                 {/* Image */}
                                 <div className="relative">
                                     <img
-                                        src={apartment.image}
+                                        src={
+                                            apartment.images?.[0] ||
+                                            apartment.image ||
+                                            "https://placehold.co/707x434"
+                                        }
                                         alt={apartment.name}
                                         className="w-full h-64 object-cover"
                                     />
@@ -378,6 +399,12 @@ export default function Apartments({ auth, apartments }) {
                                             />
                                             <span className="text-sm font-semibold text-black">
                                                 {apartment.rating}
+                                            </span>
+                                            <span className="text-sm text-gray-600">
+                                                (
+                                                {apartment.reviews_count ||
+                                                    apartment.reviews}
+                                                )
                                             </span>
                                         </div>
                                     </div>
@@ -403,28 +430,32 @@ export default function Apartments({ auth, apartments }) {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-1">
                                             <span className="text-xl font-bold text-black">
-                                                {apartment.price}
+                                                {formatPrice(apartment.price)}
+                                            </span>
+                                            <span className="text-sm text-gray-600">
+                                                /malam
                                             </span>
                                         </div>
 
-                                        <Link
-                                            href={`/apartments/${apartment.id}`}
-                                            className="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
-                                        >
-                                            Detail
-                                            <ArrowRight size={16} />
-                                        </Link>
+                                        <div className="flex gap-2">
+                                            <Link
+                                                href={`/apartments/${apartment.id}`}
+                                                className="border border-black text-black hover:bg-black hover:text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                                            >
+                                                Detail
+                                            </Link>
+                                            <Link
+                                                href={`/booking/${apartment.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`}
+                                                className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                                            >
+                                                Booking
+                                                <ArrowRight size={16} />
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         ))}
-                    </div>
-
-                    {/* Load More Button */}
-                    <div className="text-center mt-12">
-                        <button className="border border-black text-black hover:bg-black hover:text-white px-8 py-3 rounded-lg font-medium transition-all duration-300">
-                            Muat Lebih Banyak
-                        </button>
                     </div>
                 </div>
             </div>

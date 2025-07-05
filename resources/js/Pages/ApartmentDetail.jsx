@@ -22,21 +22,48 @@ import {
     ChevronRight,
 } from "lucide-react";
 
-export default function ApartmentDetail({ auth, apartment }) {
+export default function ApartmentDetail({ apartment }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [checkIn, setCheckIn] = useState("");
-    const [checkOut, setCheckOut] = useState("");
+    const [checkIn, setCheckIn] = useState("2025-07-05");
+    const [checkOut, setCheckOut] = useState("2025-07-07");
     const [showBookingForm, setShowBookingForm] = useState(false);
+
+    // Format price helper
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(price);
+    };
+
+    // Calculate number of nights
+    const calculateNights = () => {
+        if (!checkIn || !checkOut) return 0;
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+        const timeDiff = checkOutDate - checkInDate;
+        const nights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        return nights > 0 ? nights : 0;
+    };
+
+    // Calculate total price
+    const calculateTotal = () => {
+        const nights = calculateNights();
+        const pricePerNight = apartmentData?.price || 450000;
+        const serviceFee = 25000;
+        const subtotal = nights * pricePerNight;
+        return subtotal + serviceFee;
+    };
 
     // Default apartment data jika tidak ada dari backend
     const defaultApartmentData = {
         id: 1,
         name: "Malioboro co-living",
         location: "800 m dari Malioboro",
-        price: "Rp 450.000",
-        pricePerNight: "per malam",
+        price: 450000,
         rating: 4.8,
-        reviews: 127,
+        reviews_count: 127,
         images: [
             "https://placehold.co/800x600/f0f0f0/666666?text=Apartemen+1",
             "https://placehold.co/800x600/e0e0e0/666666?text=Apartemen+2",
@@ -46,33 +73,65 @@ export default function ApartmentDetail({ auth, apartment }) {
         ],
         description:
             "Apartemen modern yang terletak strategis di pusat kota Yogyakarta. Hanya 800 meter dari Malioboro Street yang terkenal. Dilengkapi dengan fasilitas lengkap dan pemandangan kota yang menakjubkan.",
-        features: [
-            { icon: Bed, label: "2 Kamar Tidur" },
-            { icon: Bath, label: "1 Kamar Mandi" },
-            { icon: Users, label: "Max 4 Orang" },
-            { icon: Home, label: "45 m²" },
-        ],
+        bedrooms: 2,
+        bathrooms: 2,
+        area: 75,
+        features: ["AC", "WiFi", "Smart TV", "Kitchen Set", "Balcony"],
         amenities: [
-            { icon: Wifi, label: "WiFi Gratis" },
-            { icon: Car, label: "Parkir Gratis" },
-            { icon: Coffee, label: "Dapur Lengkap" },
-            { icon: Tv, label: "TV Cable" },
-            { icon: Wind, label: "AC" },
-            { icon: Shield, label: "Keamanan 24/7" },
-            { icon: Bath, label: "Kamar Mandi Pribadi" },
-            { icon: Bed, label: "Kasur Queen Size" },
-            { icon: Home, label: "Ruang Tamu" },
+            "Swimming Pool",
+            "Gym",
+            "24/7 Security",
+            "Parking",
+            "Elevator",
         ],
         rules: [
-            "Check-in: 14:00 - 22:00",
-            "Check-out: 12:00",
-            "Tidak merokok di dalam ruangan",
+            "Check-in: 14:00 - 23:00",
+            "Check-out: sebelum 12:00",
+            "Tidak boleh merokok di dalam kamar",
             "Tidak diperbolehkan membawa hewan peliharaan",
-            "Maksimal 4 tamu",
-            "Tidak boleh membuat keributan setelah jam 10 malam",
-            "Jaga kebersihan apartemen",
-            "Dilarang membawa tamu tanpa izin",
-            "Wajib melapor jika ada kerusakan fasilitas",
+            "Maksimal 4 tamu per kamar",
+            "Harap menjaga kebersihan dan ketertiban",
+            "Tidak boleh berisik setelah jam 22:00",
+            "Tamu wajib melapor ke resepsionis",
+            "Dilarang membawa makanan dan minuman dari luar",
+        ],
+        reviews: [
+            {
+                id: 1,
+                name: "Sari Indah",
+                avatar: "https://placehold.co/40x40/f0f0f0/666666?text=SI",
+                rating: 5,
+                date: "Juni 2024",
+                comment:
+                    "Apartemen yang sangat nyaman dan bersih! Lokasinya strategis banget, dekat dengan Malioboro. Pelayanannya juga ramah dan responsif. Pasti balik lagi!",
+            },
+            {
+                id: 2,
+                name: "Budi Santoso",
+                avatar: "https://placehold.co/40x40/e0e0e0/666666?text=BS",
+                rating: 4,
+                date: "Mei 2024",
+                comment:
+                    "Overall bagus, fasilitasnya lengkap dan tempat parkir luas. Cuma WiFi agak lambat di kamar yang saya tempati. Tapi untuk harga segini worth it lah.",
+            },
+            {
+                id: 3,
+                name: "Maya Salsabila",
+                avatar: "https://placehold.co/40x40/d0d0d0/666666?text=MS",
+                rating: 5,
+                date: "April 2024",
+                comment:
+                    "Perfect! Apartemennya modern, bersih, dan sesuai foto. Staff nya helpful banget dan kasih rekomendasi tempat makan enak di sekitar sini.",
+            },
+            {
+                id: 4,
+                name: "Ahmad Rizki",
+                avatar: "https://placehold.co/40x40/c0c0c0/666666?text=AR",
+                rating: 4,
+                date: "Maret 2024",
+                comment:
+                    "Lokasi sangat strategis, bisa jalan kaki ke Malioboro. Kamarnya luas dan AC dingin. Hanya saja air panasnya kadang tidak stabil.",
+            },
         ],
     };
 
@@ -85,18 +144,23 @@ export default function ApartmentDetail({ auth, apartment }) {
         amenities: apartment?.amenities || defaultApartmentData.amenities,
         rules: apartment?.rules || defaultApartmentData.rules,
         images: apartment?.images || defaultApartmentData.images,
+        // Handle reviews - prioritas dari database dulu
+        reviews:
+            apartment?.reviews && apartment.reviews.length > 0
+                ? apartment.reviews
+                : defaultApartmentData.reviews,
+        reviewCount:
+            apartment?.reviews_count ||
+            apartment?.reviewCount ||
+            defaultApartmentData.reviews_count ||
+            defaultApartmentData.reviews?.length ||
+            0,
     };
 
     // Ensure images exist and have at least one image
     const images = apartmentData.images || [
         "https://placehold.co/800x600/f0f0f0/666666?text=No+Image",
     ];
-
-    // Debug log
-    console.log("apartmentData:", apartmentData);
-    console.log("features:", apartmentData.features);
-    console.log("amenities:", apartmentData.amenities);
-    console.log("rules:", apartmentData.rules);
 
     const nextImage = () => {
         setCurrentImageIndex((prev) =>
@@ -117,7 +181,7 @@ export default function ApartmentDetail({ auth, apartment }) {
                 className="min-h-screen bg-white font-['Poppins']"
                 data-theme="light"
             >
-                <Header auth={auth} />
+                <Header />
 
                 <div className="px-4 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
                     {/* Back Button */}
@@ -148,7 +212,7 @@ export default function ApartmentDetail({ auth, apartment }) {
                                             {apartmentData.rating || "4.5"}
                                         </span>
                                         <span>
-                                            ({apartmentData.reviews || 0}{" "}
+                                            ({apartmentData.reviewCount || 0}{" "}
                                             ulasan)
                                         </span>
                                     </div>
@@ -255,17 +319,46 @@ export default function ApartmentDetail({ auth, apartment }) {
                                         "Apartemen modern yang nyaman dan strategis."}
                                 </p>
 
+                                {/* Quick Info */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Bed size={20} />
+                                        <span className="text-sm">
+                                            {apartmentData.bedrooms} Kamar Tidur
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Bath size={20} />
+                                        <span className="text-sm">
+                                            {apartmentData.bathrooms} Kamar
+                                            Mandi
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Users size={20} />
+                                        <span className="text-sm">
+                                            Max 4 Orang
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Home size={20} />
+                                        <span className="text-sm">
+                                            {apartmentData.area} m²
+                                        </span>
+                                    </div>
+                                </div>
+
                                 {/* Features */}
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {apartmentData.features.map(
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {(apartmentData.features || []).map(
                                         (feature, index) => (
                                             <div
                                                 key={index}
-                                                className="flex items-center gap-2 text-gray-700"
+                                                className="flex items-center gap-2 text-gray-700 bg-gray-50 rounded-lg p-3"
                                             >
-                                                <feature.icon size={20} />
+                                                <div className="w-2 h-2 bg-black rounded-full"></div>
                                                 <span className="text-sm">
-                                                    {feature.label}
+                                                    {feature}
                                                 </span>
                                             </div>
                                         )
@@ -278,19 +371,16 @@ export default function ApartmentDetail({ auth, apartment }) {
                                 <h2 className="text-2xl font-bold text-black mb-4">
                                     Fasilitas
                                 </h2>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {apartmentData.amenities.map(
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {(apartmentData.amenities || []).map(
                                         (amenity, index) => (
                                             <div
                                                 key={index}
-                                                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                                                className="flex items-center gap-2 text-gray-700 bg-gray-50 rounded-lg p-3"
                                             >
-                                                <amenity.icon
-                                                    size={20}
-                                                    className="text-gray-600"
-                                                />
-                                                <span className="text-gray-700">
-                                                    {amenity.label}
+                                                <div className="w-2 h-2 bg-black rounded-full"></div>
+                                                <span className="text-sm">
+                                                    {amenity}
                                                 </span>
                                             </div>
                                         )
@@ -304,20 +394,116 @@ export default function ApartmentDetail({ auth, apartment }) {
                                     Aturan Apartemen
                                 </h2>
                                 <ul className="space-y-2">
-                                    {apartmentData.rules.map((rule, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-start gap-2"
-                                        >
-                                            <span className="text-gray-400 mt-1">
-                                                •
-                                            </span>
-                                            <span className="text-gray-700">
-                                                {rule}
-                                            </span>
-                                        </li>
-                                    ))}
+                                    {(apartmentData.rules || []).map(
+                                        (rule, index) => (
+                                            <li
+                                                key={index}
+                                                className="flex items-start gap-2"
+                                            >
+                                                <span className="text-gray-400 mt-1">
+                                                    •
+                                                </span>
+                                                <span className="text-gray-700">
+                                                    {rule}
+                                                </span>
+                                            </li>
+                                        )
+                                    )}
                                 </ul>
+                            </div>
+
+                            {/* Reviews */}
+                            <div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-black">
+                                        Ulasan Tamu
+                                    </h2>
+                                    <div className="flex items-center gap-2">
+                                        <Star
+                                            size={20}
+                                            className="text-black fill-current"
+                                        />
+                                        <span className="font-semibold text-black">
+                                            {apartmentData.rating}
+                                        </span>
+                                        <span className="text-gray-600">
+                                            (
+                                            {
+                                                (apartmentData.reviews || [])
+                                                    .length
+                                            }{" "}
+                                            ulasan)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {(apartmentData.reviews || []).map(
+                                        (review) => (
+                                            <div
+                                                key={review.id}
+                                                className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <img
+                                                        src={review.avatar}
+                                                        alt={review.name}
+                                                        className="w-10 h-10 rounded-full bg-gray-200"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div>
+                                                                <h4 className="font-semibold text-black">
+                                                                    {
+                                                                        review.name
+                                                                    }
+                                                                </h4>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {
+                                                                        review.date
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                {[
+                                                                    ...Array(5),
+                                                                ].map(
+                                                                    (_, i) => (
+                                                                        <Star
+                                                                            key={
+                                                                                i
+                                                                            }
+                                                                            size={
+                                                                                16
+                                                                            }
+                                                                            className={`${
+                                                                                i <
+                                                                                review.rating
+                                                                                    ? "text-black fill-current"
+                                                                                    : "text-gray-300"
+                                                                            }`}
+                                                                        />
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-gray-700 leading-relaxed">
+                                                            {review.comment}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-gray-200">
+                                    <button className="text-black font-medium hover:underline">
+                                        Lihat semua{" "}
+                                        {(apartmentData.reviews || []).length}{" "}
+                                        ulasan
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -326,11 +512,11 @@ export default function ApartmentDetail({ auth, apartment }) {
                             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm sticky top-32">
                                 <div className="text-center mb-6">
                                     <div className="text-2xl font-bold text-black">
-                                        {apartmentData.price || "Rp 450.000"}
+                                        {formatPrice(apartmentData.price) ||
+                                            "Rp 450.000"}
                                     </div>
                                     <div className="text-gray-600">
-                                        {apartmentData.pricePerNight ||
-                                            "per malam"}
+                                        per malam
                                     </div>
                                 </div>
 
@@ -365,26 +551,54 @@ export default function ApartmentDetail({ auth, apartment }) {
                                         </div>
                                     </div>
 
-                                    <button className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                                    <Link
+                                        href={`/booking/${apartmentData.id}?checkIn=${checkIn}&checkOut=${checkOut}`}
+                                        className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors text-center block"
+                                    >
                                         Pesan Sekarang
-                                    </button>
+                                    </Link>
                                 </div>
 
                                 <div className="mt-6 pt-4 border-t border-gray-200">
                                     <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
                                         <span>Biaya per malam</span>
                                         <span>
-                                            {apartmentData.price ||
-                                                "Rp 450.000"}
+                                            {formatPrice(apartmentData.price)}
                                         </span>
                                     </div>
+                                    {calculateNights() > 0 && (
+                                        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                            <span>Jumlah malam</span>
+                                            <span>
+                                                {calculateNights()} malam
+                                            </span>
+                                        </div>
+                                    )}
+                                    {calculateNights() > 0 && (
+                                        <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                            <span>Subtotal</span>
+                                            <span>
+                                                {formatPrice(
+                                                    calculateNights() *
+                                                        apartmentData.price
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
                                         <span>Biaya layanan</span>
                                         <span>Rp 25.000</span>
                                     </div>
                                     <div className="flex justify-between items-center font-semibold text-black pt-2 border-t border-gray-200">
                                         <span>Total</span>
-                                        <span>Rp 475.000</span>
+                                        <span>
+                                            {calculateNights() > 0
+                                                ? formatPrice(calculateTotal())
+                                                : formatPrice(
+                                                      (apartmentData.price ||
+                                                          450000) + 25000
+                                                  )}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

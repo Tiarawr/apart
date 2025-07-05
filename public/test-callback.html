@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Callback URLs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .btn { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Callback URLs</h1>
+        
+        <div class="result" id="console-output">
+            <h3>Console Output:</h3>
+            <pre id="console-log"></pre>
+        </div>
+        
+        <div>
+            <button class="btn" onclick="testCallbacks()">Test Callback URLs</button>
+            <button class="btn" onclick="testPaymentAPI()">Test Payment API</button>
+            <button class="btn" onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="result">
+            <h3>Manual Test Links:</h3>
+            <p>Click these links to test callback URLs manually:</p>
+            <ul>
+                <li><a href="/booking/success?order_id=BOOKING-1234567890-5678" target="_blank">Success Callback</a></li>
+                <li><a href="/booking/error?order_id=BOOKING-1234567890-5678" target="_blank">Error Callback</a></li>
+                <li><a href="/booking/pending?order_id=BOOKING-1234567890-5678" target="_blank">Pending Callback</a></li>
+                <li><a href="/booking/detail/BOOKING-1234567890-5678" target="_blank">Booking Detail (Test Order)</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Custom console to show output in page
+        const consoleDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleDiv.textContent += args.join(' ') + '\n';
+        };
+        
+        function clearConsole() {
+            consoleDiv.textContent = '';
+        }
+        
+        function testCallbacks() {
+            console.log('=== Testing Callback URLs ===');
+            
+            const orderId = 'BOOKING-1234567890-5678';
+            const baseUrl = window.location.origin;
+            
+            const urls = {
+                success: `${baseUrl}/booking/success?order_id=${orderId}`,
+                error: `${baseUrl}/booking/error?order_id=${orderId}`,
+                pending: `${baseUrl}/booking/pending?order_id=${orderId}`,
+                detail: `${baseUrl}/booking/detail/${orderId}`
+            };
+            
+            Object.entries(urls).forEach(([type, url]) => {
+                console.log(`Testing ${type}: ${url}`);
+                
+                fetch(url)
+                    .then(response => {
+                        if (response.ok) {
+                            console.log(`✓ ${type} callback works (${response.status})`);
+                        } else {
+                            console.log(`✗ ${type} callback failed (${response.status})`);
+                        }
+                    })
+                    .catch(error => {
+                        console.log(`✗ ${type} callback error: ${error.message}`);
+                    });
+            });
+        }
+        
+        function testPaymentAPI() {
+            console.log('=== Testing Payment API ===');
+            
+            const testData = {
+                apartment_id: 1,
+                customer_name: 'Test Customer',
+                customer_email: 'test@example.com',
+                check_in: '2024-01-15',
+                check_out: '2024-01-16',
+                payment_method: 'qris',
+                payment_provider: null,
+                amount: 150000,
+                nights: 1,
+                notes: 'Test transaction for callback testing'
+            };
+            
+            fetch('/api/payment/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(testData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✓ Payment API works');
+                    console.log('Order ID: ' + data.order_id);
+                    console.log('Booking Detail URL: ' + data.booking_detail_url);
+                    
+                    // Test the booking detail URL
+                    if (data.booking_detail_url) {
+                        fetch(data.booking_detail_url)
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log('✓ Booking detail page accessible');
+                                } else {
+                                    console.log('✗ Booking detail page not accessible (' + response.status + ')');
+                                }
+                            })
+                            .catch(error => {
+                                console.log('✗ Booking detail error: ' + error.message);
+                            });
+                    }
+                } else {
+                    console.log('✗ Payment API failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.log('✗ Payment API error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

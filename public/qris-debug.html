@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRIS Debug Test</title>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-NGufRNxUQIK3F8nq"></script>
+</head>
+<body>
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+        <h1>QRIS Payment Method Debug</h1>
+        <p>Klik tombol untuk test berbagai payment method:</p>
+        
+        <button onclick="testQRIS()" style="margin: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+            Test QRIS Murni
+        </button>
+        
+        <button onclick="testGoPay()" style="margin: 10px; padding: 10px 20px; background: #00AA13; color: white; border: none; cursor: pointer;">
+            Test GoPay QR
+        </button>
+        
+        <button onclick="testAllQR()" style="margin: 10px; padding: 10px 20px; background: #FF6B35; color: white; border: none; cursor: pointer;">
+            Test All QR Methods
+        </button>
+        
+        <button onclick="testAllPayments()" style="margin: 10px; padding: 10px 20px; background: #6C757D; color: white; border: none; cursor: pointer;">
+            Test All Payments
+        </button>
+        
+        <div id="result" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
+            <p><strong>Hasil test akan muncul di sini...</strong></p>
+        </div>
+    </div>
+
+    <script>
+        function testQRIS() {
+            testPayment('qris', 'Test QRIS - Snap Token: 674f2448-d447-4d1b-9c17-734b97f06431', 'Jika muncul "No payment channels available", berarti QRIS tidak tersedia di sandbox');
+        }
+
+        function testGoPay() {
+            testPayment('gopay', 'Test GoPay - Snap Token: e5fd59e3-6b72-4fd2-8d9c-c5896064784e', 'GoPay biasanya tersedia dan support QR Code');
+        }
+        
+        function testAllQR() {
+            testPayment('all-qr', 'Test All QR - Snap Token: 1a5f09bf-00f8-442d-aa79-dbdcbc5f0379', 'Semua QR methods tersedia');
+        }
+        
+        function testAllPayments() {
+            testPayment('all', 'Test All Payments - Snap Token: f5785bd3-30eb-4f01-bb2c-c1a9422fb f59', 'Semua payment methods tersedia');
+        }
+
+        function testPayment(type, title, description) {
+            const tokens = {
+                'qris': '674f2448-d447-4d1b-9c17-734b97f06431',
+                'gopay': 'e5fd59e3-6b72-4fd2-8d9c-c5896064784e',
+                'all-qr': '1a5f09bf-00f8-442d-aa79-dbdcbc5f0379',
+                'all': 'f5785bd3-30eb-4f01-bb2c-c1a9422fb f59'
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${description}</p>
+                <p><strong>Status:</strong> Membuka Snap...</p>
+            `;
+            
+            const snapToken = tokens[type];
+            
+            snap.pay(snapToken, {
+                onSuccess: function(result) {
+                    resultDiv.innerHTML += `<p style="color: green;"><strong>✓ SUCCESS:</strong> ${JSON.stringify(result)}</p>`;
+                },
+                onPending: function(result) {
+                    resultDiv.innerHTML += `<p style="color: orange;"><strong>⏳ PENDING:</strong> ${JSON.stringify(result)}</p>`;
+                },
+                onError: function(result) {
+                    resultDiv.innerHTML += `<p style="color: red;"><strong>✗ ERROR:</strong> ${JSON.stringify(result)}</p>`;
+                },
+                onClose: function() {
+                    resultDiv.innerHTML += `<p style="color: blue;"><strong>ℹ CLOSED:</strong> User closed the payment dialog</p>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

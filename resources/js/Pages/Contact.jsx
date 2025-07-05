@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-export default function Contact({ auth }) {
+export default function Contact() {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -50,7 +50,7 @@ export default function Contact({ auth }) {
                 className="min-h-screen bg-white font-['Poppins']"
                 data-theme="light"
             >
-                <Header auth={auth} />
+                <Header />
 
                 {/* Hero Section */}
                 <section className="bg-gray-50 pt-24 lg:pt-32 pb-16">
@@ -61,8 +61,8 @@ export default function Contact({ auth }) {
                             </h1>
                             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                                 Punya pertanyaan atau butuh bantuan? Jangan ragu
-                                untuk menghubungi kami. Tim customer service kami
-                                siap membantu Anda 24/7.
+                                untuk menghubungi kami. Tim customer service
+                                kami siap membantu Anda 24/7.
                             </p>
                         </div>
                     </div>
@@ -169,8 +169,14 @@ export default function Contact({ auth }) {
                                                     Kami siap melayani Anda
                                                 </p>
                                                 <div className="text-black font-medium">
-                                                    <p>Senin - Jumat: 08:00 - 22:00</p>
-                                                    <p>Sabtu - Minggu: 09:00 - 21:00</p>
+                                                    <p>
+                                                        Senin - Jumat: 08:00 -
+                                                        22:00
+                                                    </p>
+                                                    <p>
+                                                        Sabtu - Minggu: 09:00 -
+                                                        21:00
+                                                    </p>
                                                     <p className="text-green-600 text-sm mt-1">
                                                         Customer Service 24/7
                                                     </p>
@@ -207,7 +213,10 @@ export default function Contact({ auth }) {
                                 <h2 className="text-2xl font-bold text-black mb-6">
                                     Kirim Pesan
                                 </h2>
-                                <form onSubmit={handleSubmit} className="space-y-4">
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="space-y-4"
+                                >
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -283,7 +292,9 @@ export default function Contact({ auth }) {
                                             required
                                             className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                                         >
-                                            <option value="">Pilih subjek</option>
+                                            <option value="">
+                                                Pilih subjek
+                                            </option>
                                             <option value="booking">
                                                 Booking Apartemen
                                             </option>
@@ -296,7 +307,9 @@ export default function Contact({ auth }) {
                                             <option value="partnership">
                                                 Kerjasama
                                             </option>
-                                            <option value="other">Lainnya</option>
+                                            <option value="other">
+                                                Lainnya
+                                            </option>
                                         </select>
                                     </div>
 
@@ -348,7 +361,10 @@ export default function Contact({ auth }) {
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="aspect-video bg-gray-200 flex items-center justify-center">
                                 <div className="text-center">
-                                    <MapPin size={48} className="text-gray-400 mx-auto mb-4" />
+                                    <MapPin
+                                        size={48}
+                                        className="text-gray-400 mx-auto mb-4"
+                                    />
                                     <p className="text-gray-600">
                                         Google Maps akan dimuat di sini
                                     </p>
