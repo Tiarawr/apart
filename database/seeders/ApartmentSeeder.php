@@ -29,7 +29,8 @@ class ApartmentSeeder extends Seeder
                 'features' => ['AC', 'WiFi', 'Smart TV', 'Kitchen Set', 'Balcony'],
                 'amenities' => ['Swimming Pool', 'Gym', '24/7 Security', 'Parking', 'Elevator'],
                 'rules' => ['No Smoking', 'No Pets', 'No Parties', 'Check-in: 14:00', 'Check-out: 12:00'],
-                'type' => 'studio'
+                'type' => 'studio',
+                'capacity' => 5
             ],
             [
                 'name' => 'Soedirman Apart',

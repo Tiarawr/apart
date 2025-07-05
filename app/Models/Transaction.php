@@ -37,4 +37,21 @@ class Transaction extends Model
     {
         return $this->belongsTo(Apartment::class);
     }
+
+    public static function checkoutExpiredBookings()
+    {
+        $today = now()->toDateString();
+        
+        // Update semua booking yang check_out nya hari ini atau sebelumnya
+        $expiredBookings = static::where('status', 'settlement')
+            ->where('check_out', '<=', $today)
+            ->get();
+            
+        foreach ($expiredBookings as $booking) {
+            // Bisa tambahkan logic lain seperti update status jadi 'completed'
+            // atau biarkan tetap 'settlement' tapi sudah tidak mengurangi availability
+        }
+        
+        return $expiredBookings->count();
+    }
 }

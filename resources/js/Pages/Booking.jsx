@@ -57,8 +57,14 @@ export default function Booking({ apartment, checkIn, checkOut }) {
     // Calculate number of nights
     const calculateNights = () => {
         if (!formData.checkIn || !formData.checkOut) return 0;
-        const checkInDate = new Date(formData.checkIn);
-        const checkOutDate = new Date(formData.checkOut);
+        
+        // Parse dates properly to avoid timezone issues
+        const [checkInYear, checkInMonth, checkInDay] = formData.checkIn.split('-');
+        const [checkOutYear, checkOutMonth, checkOutDay] = formData.checkOut.split('-');
+        
+        const checkInDate = new Date(parseInt(checkInYear), parseInt(checkInMonth) - 1, parseInt(checkInDay));
+        const checkOutDate = new Date(parseInt(checkOutYear), parseInt(checkOutMonth) - 1, parseInt(checkOutDay));
+        
         const timeDiff = checkOutDate - checkInDate;
         const nights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         return nights > 0 ? nights : 0;
@@ -85,7 +91,9 @@ export default function Booking({ apartment, checkIn, checkOut }) {
     // Format date for display
     const formatDate = (dateString) => {
         if (!dateString) return "";
-        const date = new Date(dateString);
+        // Parse date properly to avoid timezone issues
+        const [year, month, day] = dateString.split('-');
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         return date.toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "2-digit",
@@ -271,10 +279,17 @@ export default function Booking({ apartment, checkIn, checkOut }) {
     const getMinCheckoutDate = () => {
         if (!formData.checkIn) return tomorrowStr;
 
-        const checkinDate = new Date(formData.checkIn);
+        // Parse date properly to avoid timezone issues
+        const [year, month, day] = formData.checkIn.split('-');
+        const checkinDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         const minCheckout = new Date(checkinDate);
         minCheckout.setDate(minCheckout.getDate() + 1);
-        return minCheckout.toISOString().split("T")[0];
+        
+        const minYear = minCheckout.getFullYear();
+        const minMonth = String(minCheckout.getMonth() + 1).padStart(2, '0');
+        const minDay = String(minCheckout.getDate()).padStart(2, '0');
+        
+        return `${minYear}-${minMonth}-${minDay}`;
     };
 
     const nextStep = () => {
@@ -285,10 +300,45 @@ export default function Booking({ apartment, checkIn, checkOut }) {
         setCurrentStep((prev) => Math.max(prev - 1, 1));
     };
 
+    // Validasi email
+    const validateEmail = (email) => {
+        if (!email) return "Email wajib diisi";
+        if (!email.includes('@')) return "Email harus mengandung @";
+        return "";
+    };
+
+    // Validasi nomor telepon
+    const validatePhone = (phone) => {
+        if (!phone) return "Nomor telepon wajib diisi";
+        if (!phone.startsWith('08')) return "Nomor telepon harus dimulai dengan 08";
+        if (phone.length < 10) return "Nomor telepon minimal 10 digit";
+        return "";
+    };
+
+    // Validasi nama
+    const validateName = (name) => {
+        if (!name) return "Nama wajib diisi";
+        if (name.length < 2) return "Nama minimal 2 karakter";
+        return "";
+    };
+
+    // Function to check if form is valid
+    const isFormValid = () => {
+        return (
+            validateName(formData.name) === "" &&
+            validateEmail(formData.email) === "" &&
+            validatePhone(formData.phone) === "" &&
+            formData.checkIn &&
+            formData.checkOut &&
+            formData.paymentMethod &&
+            (formData.paymentMethod === "qris" || formData.paymentProvider)
+        );
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validasi form
+        // Validasi form dasar
         if (
             !formData.name ||
             !formData.email ||
@@ -297,8 +347,17 @@ export default function Booking({ apartment, checkIn, checkOut }) {
             !formData.checkOut ||
             !formData.paymentMethod
         ) {
-            alert("Mohon lengkapi semua data yang diperlukan");
-            return;
+            return; // Hapus alert, validasi visual sudah cukup
+        }
+
+        // Validasi email harus mengandung @
+        if (!formData.email.includes('@')) {
+            return; // Hapus alert, validasi visual sudah cukup
+        }
+
+        // Validasi nomor telepon harus dimulai dengan 08
+        if (!formData.phone.startsWith('08')) {
+            return; // Hapus alert, validasi visual sudah cukup
         }
 
         // Validasi payment provider untuk E-Wallet, Virtual Account, dan Over Counter
@@ -309,8 +368,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                 formData.paymentMethod === "cstore") &&
             !formData.paymentProvider
         ) {
-            alert("Mohon pilih provider pembayaran");
-            return;
+            return; // Hapus alert, validasi visual sudah cukup
         }
 
         try {
@@ -420,14 +478,13 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                     
                     window.snap.pay(result.snap_token, {
                         onSuccess: function (result) {
-                            alert("Pembayaran berhasil!");
-                            // Redirect ke halaman detail booking hanya jika berhasil
+                            // Redirect ke halaman detail booking tanpa alert
                             window.location.href = `/booking/detail/${
                                 result.order_id || apiOrderId
                             }`;
                         },
                         onPending: function (result) {
-                            // Jangan tampilkan alert, langsung start polling
+                            // Start polling untuk check status otomatis
                             console.log("Payment pending, starting status check...");
                             
                             // Start polling untuk check status otomatis
@@ -439,18 +496,14 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                             }`;
                         },
                         onError: function (result) {
-                            alert("Pembayaran gagal!");
-                            // Redirect ke halaman error atau kembali ke form booking
+                            // Redirect ke halaman error tanpa alert
                             window.location.href = `/payment/error?order_id=${
                                 result.order_id || apiOrderId
                             }`;
                         },
                         onClose: function () {
-                            // Ketika user menutup popup, berikan opsi untuk check status
-                            const checkStatus = confirm("Apakah Anda ingin mengecek status pembayaran?");
-                            if (checkStatus) {
-                                checkPaymentStatus(apiOrderId);
-                            }
+                            // Redirect ke status check tanpa confirm
+                            window.location.href = `/payment/status?order_id=${apiOrderId}`;
                         },
                     });
                 } else {
@@ -466,11 +519,14 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                     );
                 }
             } else {
-                alert("Gagal membuat transaksi: " + result.message);
+                console.error("Gagal membuat transaksi:", result.message);
+                // Redirect ke halaman error dengan order_id
+                window.location.href = `/payment/error?message=${encodeURIComponent(result.message)}`;
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Terjadi kesalahan saat memproses pembayaran");
+            // Redirect ke halaman error umum
+            window.location.href = `/payment/error?message=${encodeURIComponent("Terjadi kesalahan sistem")}`;
         }
     };
 
@@ -487,23 +543,24 @@ export default function Booking({ apartment, checkIn, checkOut }) {
             >
                 <Header />
 
-                <div className="px-4 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
+                <div className="px-4 sm:px-6 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
                     {/* Back Button */}
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                         <Link
                             href={`/apartments/${apartmentData.id}`}
                             className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
                         >
                             <ArrowLeft size={20} />
-                            Kembali ke Detail Apartemen
+                            <span className="hidden sm:inline">Kembali ke Detail Apartemen</span>
+                            <span className="sm:hidden">Kembali</span>
                         </Link>
                     </div>
 
                     {/* Progress Steps */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-center space-x-8">
+                    <div className="mb-6 sm:mb-8">
+                        <div className="flex items-center justify-center space-x-4 sm:space-x-8 overflow-x-auto px-4">
                             <div
-                                className={`flex items-center gap-2 ${
+                                className={`flex items-center gap-2 flex-shrink-0 ${
                                     currentStep >= 1
                                         ? "text-black"
                                         : "text-gray-400"
@@ -518,19 +575,20 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     1
                                 </div>
-                                <span className="font-medium">
-                                    Data Pribadi
+                                <span className="font-medium text-sm sm:text-base">
+                                    <span className="hidden sm:inline">Data Pribadi</span>
+                                    <span className="sm:hidden">Data</span>
                                 </span>
                             </div>
                             <div
-                                className={`w-16 h-0.5 ${
+                                className={`w-8 sm:w-16 h-0.5 ${
                                     currentStep >= 2
                                         ? "bg-black"
                                         : "bg-gray-200"
                                 }`}
                             ></div>
                             <div
-                                className={`flex items-center gap-2 ${
+                                className={`flex items-center gap-2 flex-shrink-0 ${
                                     currentStep >= 2
                                         ? "text-black"
                                         : "text-gray-400"
@@ -545,17 +603,17 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     2
                                 </div>
-                                <span className="font-medium">Pembayaran</span>
+                                <span className="font-medium text-sm sm:text-base">Pembayaran</span>
                             </div>
                             <div
-                                className={`w-16 h-0.5 ${
+                                className={`w-8 sm:w-16 h-0.5 ${
                                     currentStep >= 3
                                         ? "bg-black"
                                         : "bg-gray-200"
                                 }`}
                             ></div>
                             <div
-                                className={`flex items-center gap-2 ${
+                                className={`flex items-center gap-2 flex-shrink-0 ${
                                     currentStep >= 3
                                         ? "text-black"
                                         : "text-gray-400"
@@ -570,16 +628,16 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     3
                                 </div>
-                                <span className="font-medium">Konfirmasi</span>
+                                <span className="font-medium text-sm sm:text-base">Konfirmasi</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         {/* Left Column - Form */}
                         <div className="lg:col-span-2">
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                                <h1 className="text-2xl font-bold text-black mb-6">
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+                                <h1 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
                                     Booking Apartemen
                                 </h1>
 
@@ -610,7 +668,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                                validateName(formData.name) && formData.name 
+                                                                    ? 'border-red-300 bg-red-50' 
+                                                                    : 'border-gray-200'
+                                                            }`}
                                                             placeholder="Masukkan nama lengkap"
                                                         />
                                                         <User
@@ -618,6 +680,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                                                         />
                                                     </div>
+                                                    {validateName(formData.name) && formData.name && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {validateName(formData.name)}
+                                                        </p>
+                                                    )}
                                                 </div>
 
                                                 <div>
@@ -635,7 +702,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                                validateEmail(formData.email) && formData.email 
+                                                                    ? 'border-red-300 bg-red-50' 
+                                                                    : 'border-gray-200'
+                                                            }`}
                                                             placeholder="nama@email.com"
                                                         />
                                                         <Mail
@@ -643,6 +714,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                                                         />
                                                     </div>
+                                                    {validateEmail(formData.email) && formData.email && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {validateEmail(formData.email)}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -662,7 +738,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                                validatePhone(formData.phone) && formData.phone 
+                                                                    ? 'border-red-300 bg-red-50' 
+                                                                    : 'border-gray-200'
+                                                            }`}
                                                             placeholder="08xxxxxxxxxx"
                                                         />
                                                         <Phone
@@ -670,6 +750,11 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                                                         />
                                                     </div>
+                                                    {validatePhone(formData.phone) && formData.phone && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            {validatePhone(formData.phone)}
+                                                        </p>
+                                                    )}
                                                 </div>
 
                                                 <div>
@@ -771,7 +856,28 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                 <button
                                                     type="button"
                                                     onClick={nextStep}
-                                                    className="bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                                                    disabled={
+                                                        !formData.name || 
+                                                        !formData.email || 
+                                                        !formData.phone || 
+                                                        !formData.checkIn || 
+                                                        !formData.checkOut ||
+                                                        validateName(formData.name) ||
+                                                        validateEmail(formData.email) ||
+                                                        validatePhone(formData.phone)
+                                                    }
+                                                    className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                                        formData.name && 
+                                                        formData.email && 
+                                                        formData.phone && 
+                                                        formData.checkIn && 
+                                                        formData.checkOut &&
+                                                        !validateName(formData.name) && 
+                                                        !validateEmail(formData.email) && 
+                                                        !validatePhone(formData.phone)
+                                                            ? 'bg-black text-white hover:bg-gray-800'
+                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                    }`}
                                                 >
                                                     Lanjutkan
                                                 </button>
@@ -1202,7 +1308,12 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                 </button>
                                                 <button
                                                     type="submit"
-                                                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                                    disabled={!isFormValid()}
+                                                    className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                                        isFormValid()
+                                                            ? 'bg-green-600 text-white hover:bg-green-700'
+                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                    }`}
                                                 >
                                                     Konfirmasi Booking
                                                 </button>
@@ -1214,8 +1325,8 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                         </div>
 
                         {/* Right Column - Booking Summary */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm sticky top-32">
+                        <div className="lg:col-span-1 order-first lg:order-last">
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm lg:sticky lg:top-32">
                                 <h3 className="text-lg font-semibold text-black mb-4">
                                     Ringkasan Booking
                                 </h3>
@@ -1234,13 +1345,13 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                             {apartmentData.name}
                                         </h4>
                                         <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
-                                            <MapPin size={14} />
-                                            {apartmentData.location}
+                                            <MapPin size={14} className="flex-shrink-0" />
+                                            <span className="truncate">{apartmentData.location}</span>
                                         </div>
                                         <div className="flex items-center gap-1 text-sm text-gray-600">
                                             <Star
                                                 size={14}
-                                                className="text-yellow-500 fill-current"
+                                                className="text-yellow-500 fill-current flex-shrink-0"
                                             />
                                             <span className="font-medium">
                                                 {apartmentData.formattedRating}

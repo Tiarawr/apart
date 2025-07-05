@@ -12,6 +12,11 @@ class ApartmentController extends Controller
     {
         $query = Apartment::query()->available()->with('reviews');
 
+        // Filter by date availability
+        if ($request->has('checkIn') && $request->has('checkOut')) {
+            $query->availableForDates($request->checkIn, $request->checkOut);
+        }
+
         // Filter by type
         if ($request->has('type') && $request->type !== 'all') {
             $query->byType($request->type);
@@ -29,9 +34,9 @@ class ApartmentController extends Controller
 
         // Search by name or location
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('location', 'like', '%' . $request->search . '%');
+                    ->orWhere('location', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -63,6 +68,16 @@ class ApartmentController extends Controller
         foreach ($apartments as $apartment) {
             $apartment->reviews_count = $apartment->reviews->count();
             $apartment->rating = $apartment->reviews->avg('rating') ?: 4.5; // Default rating if no reviews
+            
+            // Add available rooms info if dates are provided
+            if ($request->has('checkIn') && $request->has('checkOut')) {
+                $apartment->available_rooms = $apartment->getAvailableRoomsForDates(
+                    $request->checkIn, 
+                    $request->checkOut
+                );
+            } else {
+                $apartment->available_rooms = $apartment->capacity;
+            }
         }
 
         // Store filter parameters for frontend
@@ -86,9 +101,52 @@ class ApartmentController extends Controller
         ]);
     }
 
-    public function api()
+    public function api(Request $request)
     {
-        $apartments = Apartment::available()->get();
+        $query = Apartment::query()->available();
+
+        // Filter by date availability
+        if ($request->has('check_in') && $request->has('check_out')) {
+            $query->availableForDates($request->check_in, $request->check_out);
+        }
+
+        // Filter by type
+        if ($request->has('type') && $request->type !== 'all') {
+            $query->byType($request->type);
+        }
+
+        // Filter by location
+        if ($request->has('location') && $request->location) {
+            $query->byLocation($request->location);
+        }
+
+        // Filter by price range
+        if ($request->has('min_price') && $request->has('max_price')) {
+            $query->inPriceRange($request->min_price, $request->max_price);
+        }
+
+        // Search by name or location
+        if ($request->has('search') && $request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('location', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $apartments = $query->get();
+
+        // Calculate available rooms for each apartment
+        foreach ($apartments as $apartment) {
+            // Add available rooms info if dates are provided
+            if ($request->has('check_in') && $request->has('check_out')) {
+                $apartment->available_rooms = $apartment->getAvailableRoomsForDates(
+                    $request->check_in, 
+                    $request->check_out
+                );
+            } else {
+                $apartment->available_rooms = $apartment->capacity;
+            }
+        }
 
         return response()->json([
             'success' => true,

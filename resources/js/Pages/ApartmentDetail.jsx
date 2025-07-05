@@ -40,8 +40,14 @@ export default function ApartmentDetail({ apartment }) {
     // Calculate number of nights
     const calculateNights = () => {
         if (!checkIn || !checkOut) return 0;
-        const checkInDate = new Date(checkIn);
-        const checkOutDate = new Date(checkOut);
+        
+        // Parse dates properly to avoid timezone issues
+        const [checkInYear, checkInMonth, checkInDay] = checkIn.split('-');
+        const [checkOutYear, checkOutMonth, checkOutDay] = checkOut.split('-');
+        
+        const checkInDate = new Date(parseInt(checkInYear), parseInt(checkInMonth) - 1, parseInt(checkInDay));
+        const checkOutDate = new Date(parseInt(checkOutYear), parseInt(checkOutMonth) - 1, parseInt(checkOutDay));
+        
         const timeDiff = checkOutDate - checkInDate;
         const nights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         return nights > 0 ? nights : 0;
@@ -183,26 +189,27 @@ export default function ApartmentDetail({ apartment }) {
             >
                 <Header />
 
-                <div className="px-4 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
+                <div className="px-4 sm:px-6 lg:px-16 py-8 pt-24 lg:pt-32 max-w-[1440px] mx-auto">
                     {/* Back Button */}
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                         <Link
                             href="/apartments"
                             className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
                         >
                             <ArrowLeft size={20} />
-                            Kembali ke Daftar Apartemen
+                            <span className="hidden sm:inline">Kembali ke Daftar Apartemen</span>
+                            <span className="sm:hidden">Kembali</span>
                         </Link>
                     </div>
 
                     {/* Apartment Header */}
-                    <div className="mb-8">
+                    <div className="mb-6 sm:mb-8">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div>
-                                <h1 className="text-3xl lg:text-4xl font-bold text-black mb-2">
+                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2">
                                     {apartmentData.name || "Apartemen"}
                                 </h1>
-                                <div className="flex items-center gap-4 text-gray-600">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-600">
                                     <div className="flex items-center gap-1">
                                         <Star
                                             size={16}
@@ -282,7 +289,7 @@ export default function ApartmentDetail({ apartment }) {
                         </div>
 
                         {/* Thumbnail Gallery */}
-                        <div className="grid grid-cols-5 gap-2 mt-4">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-4">
                             {images.map((image, index) => (
                                 <button
                                     key={index}
@@ -306,9 +313,9 @@ export default function ApartmentDetail({ apartment }) {
                     </div>
 
                     {/* Content Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                         {/* Left Column - Details */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                             {/* Basic Info */}
                             <div>
                                 <h2 className="text-2xl font-bold text-black mb-4">

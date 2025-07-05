@@ -6,7 +6,7 @@ export default function ApartmentCard({ apartment }) {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             <figure className="p-6 pb-0">
                 <img
-                    src={apartment.image || "https://placehold.co/707x434"}
+                    src={apartment.images?.[0] || apartment.image || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
                     alt={apartment.name}
                     className="rounded-xl w-full h-48 md:h-64 object-cover"
                 />
