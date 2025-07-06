@@ -381,6 +381,37 @@ Route::get('/test-email-gmail', function () {
     }
 });
 
+// Preview email template
+Route::get('/preview-email', function () {
+    $transaction = \App\Models\Transaction::latest()->first();
+    if (!$transaction) {
+        return response('No transaction found');
+    }
+    
+    // Return email view directly for preview
+    return view('emails.booking-confirmed-clean', ['transaction' => $transaction]);
+});
+
+// Test PDF generation
+Route::get('/test-pdf', function () {
+    try {
+        $transaction = Transaction::latest()->first();
+        
+        if (!$transaction) {
+            return response()->json(['error' => 'No transaction found']);
+        }
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('voucher.booking-voucher-minimal', ['transaction' => $transaction]);
+        
+        return $pdf->download('test-voucher.pdf');
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'PDF generation failed: ' . $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 // Authentication routes removed - keeping it simple
 
 require __DIR__.'/auth.php';
