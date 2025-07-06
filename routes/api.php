@@ -14,6 +14,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/payment/create', [App\Http\Controllers\PaymentController::class, 'createPayment']);
 Route::post('/payment/notification', [App\Http\Controllers\PaymentController::class, 'handleNotification']);
 Route::get('/payment/status/{orderId}', [App\Http\Controllers\PaymentController::class, 'checkStatus']);
+Route::get('/payment/redirect/{orderId}', [App\Http\Controllers\PaymentController::class, 'getRedirectUrl']);
 
 // Test route
 Route::get('/test', function () {

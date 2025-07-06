@@ -16,7 +16,6 @@ import {
   Bed,
   Home,
   Shield,
-  Heart,
   Share2,
   ChevronLeft,
   ChevronRight,
@@ -27,6 +26,34 @@ export default function ApartmentDetail({ apartment }) {
   const [checkIn, setCheckIn] = useState("2025-07-05");
   const [checkOut, setCheckOut] = useState("2025-07-07");
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showCopyAlert, setShowCopyAlert] = useState(false);
+
+  // Function to share/copy link
+  const shareApartment = async () => {
+    try {
+      const apartmentUrl = window.location.href;
+      await navigator.clipboard.writeText(apartmentUrl);
+      
+      // Show alert
+      setShowCopyAlert(true);
+      setTimeout(() => {
+        setShowCopyAlert(false);
+      }, 2000);
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      setShowCopyAlert(true);
+      setTimeout(() => {
+        setShowCopyAlert(false);
+      }, 2000);
+    }
+  };
 
   // Format price helper
   const formatPrice = (price) => {
@@ -181,6 +208,27 @@ export default function ApartmentDetail({ apartment }) {
   return (
     <>
       <Head title={`${apartmentData.name || "Apartemen"} - Lilo Apart`} />
+      
+      {/* Copy Link Alert Popup */}
+      {showCopyAlert && (
+        <div className="fixed inset-0 z-[9999] pointer-events-none">
+          <div className="absolute top-4 right-4 pointer-events-auto">
+            <div className="bg-green-50 border-2 border-green-300 text-green-800 rounded-lg p-4 shadow-xl transition-all duration-300 transform animate-in slide-in-from-top-2" style={{ minWidth: '250px' }}>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium">Link telah disalin</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div
         className="min-h-screen bg-white font-['Poppins']"
         data-theme="light"
@@ -224,13 +272,12 @@ export default function ApartmentDetail({ apartment }) {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={shareApartment}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
                   <Share2 size={16} />
                   Bagikan
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Heart size={16} />
-                  Simpan
                 </button>
               </div>
             </div>
@@ -532,6 +579,13 @@ export default function ApartmentDetail({ apartment }) {
           </div>
         </div>
       </div>
+
+      {/* Copy Alert */}
+      {showCopyAlert && (
+        <div className="fixed top-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity">
+          Link telah disalin
+        </div>
+      )}
     </>
   );
 }

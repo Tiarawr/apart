@@ -159,12 +159,6 @@ export default function VirtualAccount() {
                                 >
                                     Kembali ke Beranda
                                 </Link>
-                                <button
-                                    onClick={() => window.print()}
-                                    className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                                >
-                                    Cetak Bukti
-                                </button>
                             </div>
                         </div>
                     </div>

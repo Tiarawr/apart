@@ -483,4 +483,167 @@ class PaymentController extends Controller
                 }
         }
     }
+
+    /**
+     * Get redirect URL for a pending payment
+     */
+    public function getRedirectUrl($orderId)
+    {
+        try {
+            Log::info('Getting redirect URL for order: ' . $orderId);
+
+            // Configure Midtrans
+            Config::$serverKey = config('midtrans.server_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized = config('midtrans.is_sanitized');
+            Config::$is3ds = config('midtrans.is_3ds');
+
+            // Find the transaction in our database
+            $transaction = Transaction::where('order_id', $orderId)->first();
+            
+            if (!$transaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction not found'
+                ], 404);
+            }
+
+            // If transaction is not pending, don't provide redirect URL
+            if ($transaction->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction is not pending',
+                    'status' => $transaction->status
+                ], 400);
+            }
+
+            // Check if we have a stored redirect URL
+            if (!empty($transaction->redirect_url)) {
+                return response()->json([
+                    'success' => true,
+                    'redirect_url' => $transaction->redirect_url,
+                    'source' => 'stored'
+                ]);
+            }
+
+            // Try to get status from Midtrans to see if we can get redirect URL
+            try {
+                $status = MidtransTransaction::status($orderId);
+                
+                Log::info('Midtrans status response for redirect', [
+                    'order_id' => $orderId,
+                    'status' => $status
+                ]);
+
+                // Look for various redirect URL fields in Midtrans response
+                $redirectUrl = null;
+                
+                if (isset($status->actions) && is_array($status->actions)) {
+                    foreach ($status->actions as $action) {
+                        if (isset($action->url)) {
+                            $redirectUrl = $action->url;
+                            break;
+                        }
+                    }
+                }
+                
+                // Alternative fields where redirect URL might be stored
+                if (!$redirectUrl && isset($status->redirect_url)) {
+                    $redirectUrl = $status->redirect_url;
+                }
+                
+                if (!$redirectUrl && isset($status->payment_url)) {
+                    $redirectUrl = $status->payment_url;
+                }
+
+                if ($redirectUrl) {
+                    // Store the redirect URL in our database for future use
+                    $transaction->update(['redirect_url' => $redirectUrl]);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'redirect_url' => $redirectUrl,
+                        'source' => 'midtrans'
+                    ]);
+                }
+
+                // If no redirect URL found but transaction is still pending
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No redirect URL available for this transaction',
+                    'midtrans_status' => $status->transaction_status ?? 'unknown'
+                ], 404);
+
+            } catch (\Exception $midtransError) {
+                Log::error('Midtrans error when getting redirect URL', [
+                    'order_id' => $orderId,
+                    'error' => $midtransError->getMessage()
+                ]);
+
+                // If Midtrans call fails, try to create a new payment token
+                try {
+                    $bookingData = json_decode($transaction->booking_data, true);
+                    
+                    // Recreate Midtrans transaction
+                    $params = [
+                        'transaction_details' => [
+                            'order_id' => $orderId,
+                            'gross_amount' => $transaction->total_amount,
+                        ],
+                        'customer_details' => [
+                            'first_name' => $bookingData['customer_name'] ?? 'Customer',
+                            'email' => $bookingData['customer_email'] ?? '',
+                            'phone' => $bookingData['customer_phone'] ?? '',
+                        ],
+                        'item_details' => [
+                            [
+                                'id' => 'apartment_' . $bookingData['apartment_id'],
+                                'price' => $transaction->total_amount,
+                                'quantity' => 1,
+                                'name' => 'Booking Apartemen - ' . ($bookingData['nights'] ?? 1) . ' malam',
+                            ]
+                        ],
+                    ];
+
+                    $snapToken = Snap::getSnapToken($params);
+                    $newRedirectUrl = config('midtrans.snap_url') . '/' . $snapToken;
+                    
+                    // Update transaction with new redirect URL
+                    $transaction->update([
+                        'redirect_url' => $newRedirectUrl,
+                        'snap_token' => $snapToken
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'redirect_url' => $newRedirectUrl,
+                        'source' => 'regenerated'
+                    ]);
+
+                } catch (\Exception $regenerateError) {
+                    Log::error('Failed to regenerate payment token', [
+                        'order_id' => $orderId,
+                        'error' => $regenerateError->getMessage()
+                    ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Unable to get or regenerate payment URL'
+                    ], 500);
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error getting redirect URL', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal server error'
+            ], 500);
+        }
+    }
 }

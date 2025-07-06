@@ -35,8 +35,6 @@ export default function QRIS() {
                 return prevTime - 1;
             });
         }, 1000);
-
-        // Simulasi pembayaran berhasil setelah 10 detik (untuk demo)
         const successTimer = setTimeout(() => {
             setPaymentStatus("success");
         }, 10000);
@@ -145,12 +143,6 @@ export default function QRIS() {
                                 >
                                     Kembali ke Beranda
                                 </Link>
-                                <button
-                                    onClick={() => window.print()}
-                                    className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                                >
-                                    Cetak Bukti
-                                </button>
                             </div>
                         </div>
                     </div>
