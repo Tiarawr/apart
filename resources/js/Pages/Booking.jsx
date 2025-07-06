@@ -557,17 +557,17 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                     </div>
 
                     {/* Progress Steps */}
-                    <div className="mb-6 sm:mb-8">
-                        <div className="flex items-center justify-center space-x-4 sm:space-x-8 overflow-x-auto px-4">
+                    <div className="mb-4 sm:mb-6 lg:mb-8">
+                        <div className="flex items-center justify-between sm:justify-center sm:space-x-6 lg:space-x-8 overflow-x-auto px-2 sm:px-4">
                             <div
-                                className={`flex items-center gap-2 flex-shrink-0 ${
+                                className={`flex items-center gap-1 sm:gap-2 flex-shrink-0 ${
                                     currentStep >= 1
                                         ? "text-black"
                                         : "text-gray-400"
                                 }`}
                             >
                                 <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                                         currentStep >= 1
                                             ? "bg-black text-white"
                                             : "bg-gray-200"
@@ -575,27 +575,27 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     1
                                 </div>
-                                <span className="font-medium text-sm sm:text-base">
-                                    <span className="hidden sm:inline">Data Pribadi</span>
+                                <span className="font-medium text-xs sm:text-sm">
+                                    <span className="hidden sm:inline">Data</span>
                                     <span className="sm:hidden">Data</span>
                                 </span>
                             </div>
                             <div
-                                className={`w-8 sm:w-16 h-0.5 ${
+                                className={`w-6 sm:w-8 lg:w-12 h-0.5 ${
                                     currentStep >= 2
                                         ? "bg-black"
                                         : "bg-gray-200"
                                 }`}
                             ></div>
                             <div
-                                className={`flex items-center gap-2 flex-shrink-0 ${
+                                className={`flex items-center gap-1 sm:gap-2 flex-shrink-0 ${
                                     currentStep >= 2
                                         ? "text-black"
                                         : "text-gray-400"
                                 }`}
                             >
                                 <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                                         currentStep >= 2
                                             ? "bg-black text-white"
                                             : "bg-gray-200"
@@ -603,24 +603,27 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     2
                                 </div>
-                                <span className="font-medium text-sm sm:text-base">Pembayaran</span>
+                                <span className="font-medium text-xs sm:text-sm">
+                                    <span className="hidden sm:inline">Pembayaran</span>
+                                    <span className="sm:hidden">Bayar</span>
+                                </span>
                             </div>
                             <div
-                                className={`w-8 sm:w-16 h-0.5 ${
+                                className={`w-6 sm:w-8 lg:w-12 h-0.5 ${
                                     currentStep >= 3
                                         ? "bg-black"
                                         : "bg-gray-200"
                                 }`}
                             ></div>
                             <div
-                                className={`flex items-center gap-2 flex-shrink-0 ${
+                                className={`flex items-center gap-1 sm:gap-2 flex-shrink-0 ${
                                     currentStep >= 3
                                         ? "text-black"
                                         : "text-gray-400"
                                 }`}
                             >
                                 <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                                         currentStep >= 3
                                             ? "bg-black text-white"
                                             : "bg-gray-200"
@@ -628,17 +631,17 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                 >
                                     3
                                 </div>
-                                <span className="font-medium text-sm sm:text-base">Konfirmasi</span>
+                                <span className="font-medium text-xs sm:text-sm">Konfirmasi</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {/* Left Column - Form */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 order-2 lg:order-1">
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
-                                <h1 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-                                    Booking Apartemen
+                                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-black mb-4 sm:mb-6">
+                                    Ringkasan Booking
                                 </h1>
 
                                 <form
@@ -652,7 +655,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                 Data Pribadi & Tanggal
                                             </h2>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Nama Lengkap *
@@ -668,7 +671,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base ${
                                                                 validateName(formData.name) && formData.name 
                                                                     ? 'border-red-300 bg-red-50' 
                                                                     : 'border-gray-200'
@@ -702,7 +705,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base ${
                                                                 validateEmail(formData.email) && formData.email 
                                                                     ? 'border-red-300 bg-red-50' 
                                                                     : 'border-gray-200'
@@ -722,7 +725,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Nomor Telepon *
@@ -738,7 +741,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                                 handleChange
                                                             }
                                                             required
-                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                                                            className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base ${
                                                                 validatePhone(formData.phone) && formData.phone 
                                                                     ? 'border-red-300 bg-red-50' 
                                                                     : 'border-gray-200'
@@ -766,7 +769,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             name="guests"
                                                             value={formData.guests || 1}
                                                             onChange={handleChange}
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base appearance-none"
                                                         >
                                                             <option value={1}>1 Tamu</option>
                                                             <option value={2}>2 Tamu</option>
@@ -775,13 +778,13 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                         </select>
                                                         <User
                                                             size={18}
-                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                                         Check-in *
@@ -798,11 +801,16 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             }
                                                             min={today}
                                                             required
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className="w-full p-3 pl-10 pr-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base appearance-none date-input"
+                                                            style={{
+                                                                backgroundImage: 'none',
+                                                                WebkitAppearance: 'none',
+                                                                MozAppearance: 'textfield'
+                                                            }}
                                                         />
                                                         <Calendar
                                                             size={18}
-                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
                                                         />
                                                     </div>
                                                 </div>
@@ -823,11 +831,16 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                             }
                                                             min={getMinCheckoutDate()}
                                                             required
-                                                            className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                                            className="w-full p-3 pl-10 pr-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm md:text-base appearance-none date-input"
+                                                            style={{
+                                                                backgroundImage: 'none',
+                                                                WebkitAppearance: 'none',
+                                                                MozAppearance: 'textfield'
+                                                            }}
                                                         />
                                                         <Calendar
                                                             size={18}
-                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
                                                         />
                                                     </div>
                                                 </div>
@@ -842,7 +855,7 @@ export default function Booking({ apartment, checkIn, checkOut }) {
                                                     value={formData.note}
                                                     onChange={handleChange}
                                                     rows={3}
-                                                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                                                    className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none text-sm md:text-base"
                                                     placeholder="Tambahkan catatan khusus untuk booking Anda (maksimal 200 karakter)"
                                                     maxLength="200"
                                                 />
