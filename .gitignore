@@ -19,7 +19,8 @@
 /storage/*.key
 /storage/pail
 /vendor
-/bootstrap/cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
 Homestead.json
 Homestead.yaml
 Thumbs.db
