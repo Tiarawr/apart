@@ -1,5 +1,7 @@
-[providers]
-php = "8.2"
+providers = ["php", "node"]
+
+[variables]
+PHP_VERSION = "8.2"
 
 [phases.build]
 cmds = [
