@@ -134,6 +134,11 @@ class PaymentController extends Controller
 
     public function handleNotification(Request $request)
     {
+        Log::info('Midtrans notification received', [
+            'all_data' => $request->all(),
+            'headers' => $request->headers->all()
+        ]);
+
         $orderId = $request->order_id;
         $statusCode = $request->status_code;
         $grossAmount = $request->gross_amount;
@@ -142,8 +147,21 @@ class PaymentController extends Controller
         // Create signature key
         $signatureKey = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
         
+        Log::info('Signature verification', [
+            'calculated_signature' => $signatureKey,
+            'received_signature' => $request->signature_key,
+            'order_id' => $orderId,
+            'status_code' => $statusCode,
+            'gross_amount' => $grossAmount
+        ]);
+        
         // Verify signature
         if ($signatureKey !== $request->signature_key) {
+            Log::error('Invalid signature for notification', [
+                'order_id' => $orderId,
+                'calculated' => $signatureKey,
+                'received' => $request->signature_key
+            ]);
             return response()->json(['message' => 'Invalid signature'], 403);
         }
 
@@ -151,11 +169,13 @@ class PaymentController extends Controller
         $transaction = Transaction::where('order_id', $orderId)->first();
         
         if (!$transaction) {
+            Log::error('Transaction not found for notification', ['order_id' => $orderId]);
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
         // Update transaction status based on Midtrans response
         $transactionStatus = $request->transaction_status;
+        $oldStatus = $transaction->status;
         
         switch ($transactionStatus) {
             case 'capture':
@@ -181,6 +201,13 @@ class PaymentController extends Controller
 
         $transaction->midtrans_response = $request->all();
         $transaction->save();
+
+        Log::info('Transaction status updated via notification', [
+            'order_id' => $orderId,
+            'old_status' => $oldStatus,
+            'new_status' => $transaction->status,
+            'midtrans_status' => $transactionStatus
+        ]);
 
         return response()->json(['message' => 'OK']);
     }
@@ -263,6 +290,9 @@ class PaymentController extends Controller
     private function createBookingTransaction($bookingData, $orderId)
     {
         try {
+            $isProduction = config('midtrans.is_production');
+            $appUrl = config('app.url');
+            
             $params = [
                 'transaction_details' => [
                     'order_id' => $orderId,
@@ -283,18 +313,24 @@ class PaymentController extends Controller
                     ]
                 ],
                 'callbacks' => [
-                    'finish' => url("/booking/success?order_id={$orderId}"),
-                    'error' => url("/booking/error?order_id={$orderId}"),
-                    'pending' => url("/booking/pending?order_id={$orderId}")
+                    'finish' => $appUrl . "/booking/success?order_id={$orderId}",
+                    'error' => $appUrl . "/booking/error?order_id={$orderId}",
+                    'pending' => $appUrl . "/booking/pending?order_id={$orderId}"
                 ],
-                'enabled_payments' => $this->getEnabledPayments($bookingData['paymentMethod'], $bookingData['paymentProvider'])
+                'notification_url' => $appUrl . "/api/payment/notification"
             ];
+
+            // Add enabled payments only for sandbox or if specifically configured
+            if (!$isProduction || $bookingData['paymentMethod'] !== 'qris') {
+                $params['enabled_payments'] = $this->getEnabledPayments($bookingData['paymentMethod'], $bookingData['paymentProvider']);
+            }
 
             Log::info('Midtrans parameters', [
                 'params' => $params,
                 'payment_method' => $bookingData['paymentMethod'],
                 'payment_provider' => $bookingData['paymentProvider'],
-                'enabled_payments' => $this->getEnabledPayments($bookingData['paymentMethod'], $bookingData['paymentProvider'])
+                'is_production' => $isProduction,
+                'app_url' => $appUrl
             ]);
 
             $snapToken = Snap::getSnapToken($params);
@@ -332,45 +368,51 @@ class PaymentController extends Controller
     
     private function getEnabledPayments($paymentMethod, $paymentProvider = null)
     {
+        $isProduction = config('midtrans.is_production');
+        
         switch ($paymentMethod) {
             case 'qris':
-                // Fallback ke GoPay karena support QR Code dan biasanya tersedia di sandbox
+                // Untuk production, gunakan gopay yang support QR
                 return ['gopay'];
             
             case 'ewallet':
-                // Jika ada provider spesifik, gunakan itu
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
-                // Jika tidak ada provider, tampilkan semua e-wallet
-                return ['gopay', 'shopeepay', 'dana', 'linkaja', 'jenius'];
+                // Untuk production, hanya payment methods yang pasti tersedia
+                return $isProduction ? ['gopay', 'dana'] : ['gopay', 'shopeepay', 'dana', 'linkaja', 'jenius'];
             
             case 'va':
-                // Jika ada provider spesifik, gunakan itu
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
-                // Jika tidak ada provider, tampilkan semua VA
-                return ['bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va'];
+                // Virtual Account yang tersedia di production
+                return ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel'];
             
             case 'cstore':
-                // Jika ada provider spesifik, gunakan itu
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
-                // Jika tidak ada provider, tampilkan semua convenience store
                 return ['alfamart', 'indomaret'];
             
             case 'akulaku':
                 return ['akulaku'];
             
             default:
-                // Fallback ke semua payment method yang biasanya tersedia di sandbox
-                return [
-                    'gopay', 'shopeepay', 'dana', 'linkaja',
-                    'bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va',
-                    'alfamart', 'indomaret', 'akulaku'
-                ];
+                // Untuk production, gunakan payment methods yang pasti tersedia
+                if ($isProduction) {
+                    return [
+                        'gopay', 'dana',
+                        'bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel',
+                        'alfamart', 'indomaret'
+                    ];
+                } else {
+                    return [
+                        'gopay', 'shopeepay', 'dana', 'linkaja',
+                        'bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va',
+                        'alfamart', 'indomaret', 'akulaku'
+                    ];
+                }
         }
     }
 }
