@@ -205,3 +205,5 @@ Route::get('/test-booking-form', function () {
 })->name('test.booking.form');
 
 // Authentication routes removed - keeping it simple
+
+require __DIR__.'/auth.php';

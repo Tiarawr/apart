@@ -1,2 +1,161 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* Print Styles for Voucher */
+@media print {
+    /* Reset untuk halaman print */
+    body {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Sembunyikan elemen yang tidak perlu untuk print */
+    .no-print,
+    header,
+    nav,
+    .print-hidden,
+    button:not(.print-show),
+    .bg-gray-50,
+    .shadow-sm,
+    .shadow-lg {
+        display: none !important;
+    }
+
+    /* Container utama untuk print */
+    .print-container {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        background: white !important;
+    }
+
+    /* Card voucher */
+    .print-voucher {
+        border: 2px solid #000 !important;
+        border-radius: 8px !important;
+        padding: 25px !important;
+        margin: 0 !important;
+        background: white !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+
+    /* Header voucher */
+    .print-header {
+        text-align: center !important;
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 15px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .print-logo {
+        font-size: 24px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        margin-bottom: 5px !important;
+    }
+
+    .print-title {
+        font-size: 20px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Section voucher */
+    .print-section {
+        margin-bottom: 20px !important;
+        padding: 15px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 5px !important;
+    }
+
+    .print-section-title {
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        margin-bottom: 10px !important;
+        padding-bottom: 5px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    /* Info rows */
+    .print-info-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-bottom: 8px !important;
+        font-size: 14px !important;
+    }
+
+    .print-info-label {
+        color: #666 !important;
+        font-weight: normal !important;
+    }
+
+    .print-info-value {
+        color: #000 !important;
+        font-weight: bold !important;
+    }
+
+    /* Total price highlight */
+    .print-total {
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        background: #f0f0f0 !important;
+        padding: 10px !important;
+        border-radius: 5px !important;
+        text-align: center !important;
+    }
+
+    /* Status badge */
+    .print-status {
+        padding: 8px 15px !important;
+        border: 2px solid #22c55e !important;
+        color: #22c55e !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        border-radius: 5px !important;
+        background: #f0fdf4 !important;
+    }
+
+    /* QR Code atau barcode area */
+    .print-qr {
+        text-align: center !important;
+        margin: 20px 0 !important;
+        padding: 15px !important;
+        border: 2px dashed #ddd !important;
+        border-radius: 5px !important;
+    }
+
+    /* Footer voucher */
+    .print-footer {
+        text-align: center !important;
+        margin-top: 25px !important;
+        padding-top: 15px !important;
+        border-top: 1px solid #ddd !important;
+        font-size: 12px !important;
+        color: #666 !important;
+    }
+
+    /* Force black text untuk readability */
+    * {
+        color: #000 !important;
+    }
+
+    /* Pastikan background putih */
+    .bg-white,
+    .bg-gray-50,
+    .bg-gray-100 {
+        background: white !important;
+    }
+
+    /* Ukuran halaman yang optimal */
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+}
