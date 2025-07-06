@@ -2,13 +2,48 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
+use Illumi    /**
+     * Get the messag    public function attachments(): array
+    {
+        // Temporarily disable PDF attachment for testing
+        return [];
+        
+        /*
+        try {
+            // Generate PDF voucher
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('voucher.booking-voucher-simple', ['transaction' => $this->transaction]);
+            
+            return [
+                \Illuminate\Mail\Mailables\Attachment::fromData(
+                    $pdf->output(),
+                    'voucher-' . $this->transaction->order_id . '.pdf'
+                )->withMime('application/pdf'),
+            ];
+        } catch (\Exception $e) {
+            // Log the error and return empty array if PDF generation fails
+            \Log::error('Failed to generate PDF attachment: ' . $e->getMessage());
+            return [];
+        }
+        */
+    }on.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.booking-confirmed-clean',
+            with: [
+                'transaction' => $this->transaction,
+            ],
+        );
+    }ueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Transaction;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class BookingConfirmed extends Mailable
 {
@@ -40,7 +75,7 @@ class BookingConfirmed extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.booking-confirmed',
+            view: 'emails.booking-confirmed-clean',
             with: [
                 'transaction' => $this->transaction,
             ],
@@ -54,6 +89,7 @@ class BookingConfirmed extends Mailable
      */
     public function attachments(): array
     {
+        // Temporarily disable PDF to test email first
         return [];
     }
 }

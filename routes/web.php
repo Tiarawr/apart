@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmed;
+use App\Models\Transaction;
 
 // Debug route for Railway deployment
 Route::get('/debug-config', function () {
@@ -245,15 +248,138 @@ Route::get('/test-payment-phone', function () {
     return view('test-payment-phone');
 })->name('test.payment.phone');
 
-// Test payment with phone page
-Route::get('/test-payment-phone', function () {
-    return view('test-payment-phone');
-})->name('test.payment.phone');
-
 // Test booking form page
 Route::get('/test-booking-form', function () {
     return view('test-booking-form');
 })->name('test.booking.form');
+
+// Test email route
+Route::get('/test-email-simple', function () {
+    try {
+        // Simple test email without PDF first
+        Mail::raw('Test email from Lilo Apart', function ($message) {
+            $message->to('yumomik@gmail.com')
+                    ->subject('Test Email from Lilo Apart')
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+        });
+        
+        return response()->json([
+            'success' => 'Simple test email sent successfully to yumomik@gmail.com',
+            'from' => config('mail.from.address'),
+            'from_name' => config('mail.from.name'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to send email: ' . $e->getMessage(),
+        ], 500);
+    }
+});
+
+Route::get('/test-email-with-pdf', function () {
+    try {
+        // Get the latest transaction for testing
+        $transaction = Transaction::latest()->first();
+        
+        if (!$transaction) {
+            return response()->json(['error' => 'No transaction found for testing']);
+        }
+        
+        // Send email with PDF attachment to yumomik@gmail.com
+        Mail::to('yumomik@gmail.com')->send(new BookingConfirmed($transaction));
+        
+        return response()->json([
+            'success' => 'Email with PDF voucher sent successfully to yumomik@gmail.com',
+            'transaction_id' => $transaction->id,
+            'order_id' => $transaction->order_id,
+            'mail_config' => [
+                'driver' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'from_address' => config('mail.from.address'),
+                'from_name' => config('mail.from.name'),
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to send email: ' . $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
+// Route to test clean email template without PDF
+Route::get('/test-email-clean', function () {
+    try {
+        $transaction = Transaction::latest()->first();
+        
+        if (!$transaction) {
+            return response()->json(['error' => 'No transaction found']);
+        }
+        
+        // Test with clean template but no PDF
+        Mail::to('yumomik@gmail.com')->send(new BookingConfirmed($transaction));
+        
+        return response()->json([
+            'success' => 'Clean email sent to yumomik@gmail.com',
+            'order_id' => $transaction->order_id
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ], 500);
+    }
+});
+
+// Debug mail configuration
+Route::get('/debug-mail-config', function () {
+    return response()->json([
+        'mail_driver' => config('mail.default'),
+        'mail_host' => config('mail.mailers.smtp.host'),
+        'mail_port' => config('mail.mailers.smtp.port'),
+        'mail_from_address' => config('mail.from.address'),
+        'mail_from_name' => config('mail.from.name'),
+        'mail_username' => config('mail.mailers.smtp.username'),
+        'mail_encryption' => config('mail.mailers.smtp.encryption'),
+        'env_values' => [
+            'MAIL_MAILER' => env('MAIL_MAILER'),
+            'MAIL_HOST' => env('MAIL_HOST'),
+            'MAIL_PORT' => env('MAIL_PORT'),
+            'MAIL_FROM_ADDRESS' => env('MAIL_FROM_ADDRESS'),
+            'MAIL_FROM_NAME' => env('MAIL_FROM_NAME'),
+        ]
+    ]);
+});
+
+// Test with different mail configuration
+Route::get('/test-email-gmail', function () {
+    try {
+        // Configure Gmail SMTP on the fly
+        config([
+            'mail.mailers.smtp.host' => 'smtp.gmail.com',
+            'mail.mailers.smtp.port' => 587,
+            'mail.mailers.smtp.encryption' => 'tls',
+            'mail.mailers.smtp.username' => 'yumomik@gmail.com', // Your Gmail
+            'mail.mailers.smtp.password' => 'your-app-password', // Need app password
+            'mail.from.address' => 'yumomik@gmail.com',
+            'mail.from.name' => 'Lilo Apart Test',
+        ]);
+        
+        Mail::raw('Test email dari Laravel menggunakan Gmail SMTP', function ($message) {
+            $message->to('yumomik@gmail.com')
+                    ->subject('Test Email via Gmail SMTP');
+        });
+        
+        return response()->json([
+            'success' => 'Test email sent via Gmail SMTP to yumomik@gmail.com'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to send email: ' . $e->getMessage()
+        ], 500);
+    }
+});
 
 // Authentication routes removed - keeping it simple
 
