@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmed;
 use Inertia\Inertia;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -190,6 +192,23 @@ class PaymentController extends Controller
             case 'capture':
             case 'settlement':
                 $transaction->status = 'settlement';
+                
+                // Send confirmation email if status changed to settlement
+                if ($oldStatus !== 'settlement') {
+                    try {
+                        Mail::to($transaction->customer_email)->send(new BookingConfirmed($transaction));
+                        Log::info('Booking confirmation email sent', [
+                            'order_id' => $orderId,
+                            'email' => $transaction->customer_email
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send booking confirmation email', [
+                            'order_id' => $orderId,
+                            'email' => $transaction->customer_email,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
                 break;
             case 'pending':
                 $transaction->status = 'pending';
@@ -294,6 +313,14 @@ class PaymentController extends Controller
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
+        
+        // Log configuration for debugging
+        Log::info('Midtrans Configuration', [
+            'server_key_length' => strlen(Config::$serverKey),
+            'is_production' => Config::$isProduction,
+            'is_sanitized' => Config::$isSanitized,
+            'is_3ds' => Config::$is3ds
+        ]);
     }
     
     private function createBookingTransaction($bookingData, $orderId)
