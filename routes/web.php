@@ -21,6 +21,42 @@ Route::get('/debug-config', function () {
     ]);
 });
 
+// Test payment API endpoint
+Route::get('/test-payment-api', function () {
+    try {
+        $testPayment = [
+            'apartment_id' => 1,
+            'customer_name' => 'Test User',
+            'customer_email' => 'test@example.com',
+            'customer_phone' => '081234567890',
+            'guests' => 1,
+            'check_in' => '2025-07-07',
+            'check_out' => '2025-07-08',
+            'payment_method' => 'qris',
+            'payment_provider' => 'qris',
+            'amount' => 100000,
+            'nights' => 1,
+            'notes' => 'Test booking'
+        ];
+
+        $response = app('App\Http\Controllers\PaymentController')->createPayment(
+            new \Illuminate\Http\Request($testPayment)
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Payment API test successful',
+            'response' => $response
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::get('/', function () {
     $apartments = \App\Models\Apartment::with('reviews')->get();
     

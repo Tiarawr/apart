@@ -15,6 +15,15 @@ class PaymentController extends Controller
     public function createPayment(Request $request)
     {
         try {
+            // Log raw request for debugging
+            Log::info('Payment API called', [
+                'method' => $request->method(),
+                'headers' => $request->headers->all(),
+                'body' => $request->all(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent()
+            ]);
+
             Log::info('Payment request received', [
                 'all_data' => $request->all(),
                 'payment_method' => $request->payment_method,
