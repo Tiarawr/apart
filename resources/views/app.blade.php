@@ -32,7 +32,7 @@
             appearance: none;
             background-image: none;
         }
-        
+
         /* Remove browser default date picker icon on webkit browsers */
         .date-input::-webkit-calendar-picker-indicator {
             opacity: 0;
@@ -42,7 +42,7 @@
             height: 100%;
             cursor: pointer;
         }
-        
+
         /* Firefox date input styling */
         .date-input::-moz-clear,
         .date-input::-moz-focus-inner {
@@ -50,14 +50,15 @@
             padding: 0;
             margin: 0;
         }
-        
+
         /* Mobile and tablet specific adjustments */
         @media (max-width: 768px) {
             .date-input {
-                font-size: 16px; /* Prevent zoom on iOS */
+                font-size: 16px;
+                /* Prevent zoom on iOS */
                 padding: 12px 12px 12px 40px;
             }
-            
+
             .date-input::-webkit-calendar-picker-indicator {
                 background: transparent;
                 bottom: 0;
@@ -71,7 +72,7 @@
                 width: auto;
             }
         }
-        
+
         /* iPad specific adjustments */
         @media (min-width: 768px) and (max-width: 1024px) {
             .date-input {
@@ -79,7 +80,7 @@
                 padding: 14px 16px 14px 42px;
             }
         }
-        
+
         /* Focus states for better accessibility */
         .date-input:focus {
             outline: none;

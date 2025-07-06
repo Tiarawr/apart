@@ -68,11 +68,11 @@ class ApartmentController extends Controller
         foreach ($apartments as $apartment) {
             $apartment->reviews_count = $apartment->reviews->count();
             $apartment->rating = $apartment->reviews->avg('rating') ?: 4.5; // Default rating if no reviews
-            
+
             // Add available rooms info if dates are provided
             if ($request->has('checkIn') && $request->has('checkOut')) {
                 $apartment->available_rooms = $apartment->getAvailableRoomsForDates(
-                    $request->checkIn, 
+                    $request->checkIn,
                     $request->checkOut
                 );
             } else {
@@ -140,7 +140,7 @@ class ApartmentController extends Controller
             // Add available rooms info if dates are provided
             if ($request->has('check_in') && $request->has('check_out')) {
                 $apartment->available_rooms = $apartment->getAvailableRoomsForDates(
-                    $request->check_in, 
+                    $request->check_in,
                     $request->check_out
                 );
             } else {

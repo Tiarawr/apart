@@ -29,11 +29,11 @@ class TestMidtrans extends Command
     {
         try {
             $this->info('Testing Midtrans integration...');
-            
+
             // Test MidtransService dengan app container
             $midtransService = app(\App\Services\MidtransService::class);
             $this->info('MidtransService created successfully');
-            
+
             // Test data
             $testData = [
                 'apartment' => [
@@ -48,16 +48,15 @@ class TestMidtrans extends Command
                 'paymentMethod' => 'qris',
                 'paymentProvider' => null,
             ];
-            
+
             $this->info('Testing createBookingTransaction...');
             $result = $midtransService->createBookingTransaction($testData);
-            
+
             if ($result['success']) {
                 $this->info('SUCCESS: ' . $result['snap_token']);
             } else {
                 $this->error('FAILED: ' . $result['message']);
             }
-            
         } catch (Exception $e) {
             $this->error('ERROR: ' . $e->getMessage());
             $this->error('File: ' . $e->getFile());

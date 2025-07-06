@@ -33,7 +33,7 @@ class PaymentController extends Controller
                 'customer_email' => $request->customer_email,
                 'customer_email_type' => gettype($request->customer_email)
             ]);
-            
+
             // Validate request
             $validatedData = $request->validate([
                 'apartment_id' => 'required|exists:apartments,id',
@@ -49,9 +49,9 @@ class PaymentController extends Controller
                 'nights' => 'required|integer|min:1',
                 'notes' => 'nullable|string'
             ]);
-            
+
             Log::info('Validation passed', $validatedData);
-            
+
             // Create transaction record
             $orderId = 'BOOKING-' . time() . '-' . rand(1000, 9999);
             $transaction = Transaction::create([
@@ -82,9 +82,9 @@ class PaymentController extends Controller
                     'payment_provider' => $validatedData['payment_provider'],
                 ]
             ]);
-            
+
             Log::info('Transaction created', ['transaction_id' => $transaction->id]);
-            
+
             // Prepare booking data for Midtrans
             $bookingData = [
                 'totalPrice' => $validatedData['amount'],
@@ -96,13 +96,13 @@ class PaymentController extends Controller
                 'paymentMethod' => $validatedData['payment_method'],
                 'paymentProvider' => $validatedData['payment_provider'],
             ];
-            
+
             Log::info('Booking data prepared', $bookingData);
-            
+
             // Create Midtrans transaction - setup config and create transaction
             $this->setupMidtransConfig();
             $midtransResult = $this->createBookingTransaction($bookingData, $orderId);
-            
+
             Log::info('Midtrans result', $midtransResult);
 
             if ($midtransResult['success']) {
@@ -127,7 +127,6 @@ class PaymentController extends Controller
                     'message' => $midtransResult['error'] ?? 'Payment failed'
                 ], 400);
             }
-            
         } catch (\Exception $e) {
             Log::error('Payment creation error', [
                 'message' => $e->getMessage(),
@@ -135,7 +134,7 @@ class PaymentController extends Controller
                 'file' => $e->getFile(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while processing your payment'
@@ -154,10 +153,10 @@ class PaymentController extends Controller
         $statusCode = $request->status_code;
         $grossAmount = $request->gross_amount;
         $serverKey = config('midtrans.server_key');
-        
+
         // Create signature key
         $signatureKey = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-        
+
         Log::info('Signature verification', [
             'calculated_signature' => $signatureKey,
             'received_signature' => $request->signature_key,
@@ -165,7 +164,7 @@ class PaymentController extends Controller
             'status_code' => $statusCode,
             'gross_amount' => $grossAmount
         ]);
-        
+
         // Verify signature
         if ($signatureKey !== $request->signature_key) {
             Log::error('Invalid signature for notification', [
@@ -178,7 +177,7 @@ class PaymentController extends Controller
 
         // Find transaction
         $transaction = Transaction::where('order_id', $orderId)->first();
-        
+
         if (!$transaction) {
             Log::error('Transaction not found for notification', ['order_id' => $orderId]);
             return response()->json(['message' => 'Transaction not found'], 404);
@@ -187,12 +186,12 @@ class PaymentController extends Controller
         // Update transaction status based on Midtrans response
         $transactionStatus = $request->transaction_status;
         $oldStatus = $transaction->status;
-        
+
         switch ($transactionStatus) {
             case 'capture':
             case 'settlement':
                 $transaction->status = 'settlement';
-                
+
                 // Send confirmation email if status changed to settlement
                 if ($oldStatus !== 'settlement') {
                     try {
@@ -244,7 +243,7 @@ class PaymentController extends Controller
     {
         try {
             $transaction = Transaction::where('order_id', $orderId)->first();
-            
+
             if (!$transaction) {
                 return response()->json([
                     'success' => false,
@@ -254,19 +253,37 @@ class PaymentController extends Controller
 
             // Setup Midtrans config
             $this->setupMidtransConfig();
-            
+
             // Get transaction status from Midtrans
             $statusResult = $this->getTransactionStatus($orderId);
-            
+
             // Update local transaction status if successful
             if ($statusResult['success']) {
                 $midtransStatus = $statusResult['data'];
                 $transactionStatus = is_array($midtransStatus) ? $midtransStatus['transaction_status'] : $midtransStatus->transaction_status;
-                
+
                 switch ($transactionStatus) {
                     case 'capture':
                     case 'settlement':
+                        $oldStatus = $transaction->status;
                         $transaction->status = 'settlement';
+                        
+                        // Send confirmation email if status changed to settlement
+                        if ($oldStatus !== 'settlement') {
+                            try {
+                                Mail::to($transaction->customer_email)->send(new BookingConfirmed($transaction));
+                                Log::info('Booking confirmation email sent via status check', [
+                                    'order_id' => $transaction->order_id,
+                                    'email' => $transaction->customer_email
+                                ]);
+                            } catch (\Exception $e) {
+                                Log::error('Failed to send booking confirmation email via status check', [
+                                    'order_id' => $transaction->order_id,
+                                    'email' => $transaction->customer_email,
+                                    'error' => $e->getMessage()
+                                ]);
+                            }
+                        }
                         break;
                     case 'pending':
                         $transaction->status = 'pending';
@@ -284,7 +301,7 @@ class PaymentController extends Controller
                         $transaction->status = 'failure';
                         break;
                 }
-                
+
                 $transaction->midtrans_response = is_array($midtransStatus) ? $midtransStatus : (array) $midtransStatus;
                 $transaction->save();
             }
@@ -299,21 +316,21 @@ class PaymentController extends Controller
                 'message' => $e->getMessage(),
                 'order_id' => $orderId
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while checking status'
             ], 500);
         }
     }
-    
+
     private function setupMidtransConfig()
     {
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
-        
+
         // Log configuration for debugging
         Log::info('Midtrans Configuration', [
             'server_key_length' => strlen(Config::$serverKey),
@@ -322,13 +339,13 @@ class PaymentController extends Controller
             'is_3ds' => Config::$is3ds
         ]);
     }
-    
+
     private function createBookingTransaction($bookingData, $orderId)
     {
         try {
             $isProduction = config('midtrans.is_production');
             $appUrl = config('app.url');
-            
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $orderId,
@@ -370,7 +387,7 @@ class PaymentController extends Controller
             ]);
 
             $snapToken = Snap::getSnapToken($params);
-            
+
             return [
                 'success' => true,
                 'snap_token' => $snapToken,
@@ -401,52 +418,67 @@ class PaymentController extends Controller
             ];
         }
     }
-    
+
     private function getEnabledPayments($paymentMethod, $paymentProvider = null)
     {
         $isProduction = config('midtrans.is_production');
-        
+
         switch ($paymentMethod) {
             case 'qris':
                 // Untuk production, gunakan gopay yang support QR
                 return ['gopay'];
-            
+
             case 'ewallet':
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
                 // Untuk production, hanya payment methods yang pasti tersedia
                 return $isProduction ? ['gopay', 'dana'] : ['gopay', 'shopeepay', 'dana', 'linkaja', 'jenius'];
-            
+
             case 'va':
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
                 // Virtual Account yang tersedia di production
                 return ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel'];
-            
+
             case 'cstore':
                 if ($paymentProvider) {
                     return [$paymentProvider];
                 }
                 return ['alfamart', 'indomaret'];
-            
+
             case 'akulaku':
                 return ['akulaku'];
-            
+
             default:
                 // Untuk production, gunakan payment methods yang pasti tersedia
                 if ($isProduction) {
                     return [
-                        'gopay', 'dana',
-                        'bca_va', 'bni_va', 'bri_va', 'permata_va', 'echannel',
-                        'alfamart', 'indomaret'
+                        'gopay',
+                        'dana',
+                        'bca_va',
+                        'bni_va',
+                        'bri_va',
+                        'permata_va',
+                        'echannel',
+                        'alfamart',
+                        'indomaret'
                     ];
                 } else {
                     return [
-                        'gopay', 'shopeepay', 'dana', 'linkaja',
-                        'bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va',
-                        'alfamart', 'indomaret', 'akulaku'
+                        'gopay',
+                        'shopeepay',
+                        'dana',
+                        'linkaja',
+                        'bca_va',
+                        'bni_va',
+                        'bri_va',
+                        'mandiri_va',
+                        'permata_va',
+                        'alfamart',
+                        'indomaret',
+                        'akulaku'
                     ];
                 }
         }
