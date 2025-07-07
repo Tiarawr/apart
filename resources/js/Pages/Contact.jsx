@@ -360,18 +360,16 @@ export default function Contact() {
                         </div>
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="aspect-video bg-gray-200 flex items-center justify-center">
-                                <div className="text-center">
-                                    <MapPin
-                                        size={48}
-                                        className="text-gray-400 mx-auto mb-4"
-                                    />
-                                    <p className="text-gray-600">
-                                        Google Maps akan dimuat di sini
-                                    </p>
-                                    <p className="text-sm text-gray-500 mt-2">
-                                        Jl. Malioboro No. 123, Yogyakarta
-                                    </p>
-                                </div>
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3952.9163009534077!2d110.36262037476617!3d-7.798686092221447!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a573d72fa9355%3A0x5c1c527ea0a09e7e!2sMalioboro%20Yogyakarta!5e0!3m2!1sid!2sid!4v1751863548980!5m2!1sid!2sid"
+                                    title="Lokasi Lilo Apart di Google Maps"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    allowFullScreen=""
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                ></iframe>
                             </div>
                         </div>
                     </div>

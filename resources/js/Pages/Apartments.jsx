@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import Header from "@/Components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Calendar,
   Search,
@@ -28,6 +28,9 @@ export default function Apartments({ apartments = {}, filters = {} }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredApartments, setFilteredApartments] = useState([]);
   const [showDatePrompt, setShowDatePrompt] = useState(false);
+
+  const checkInPickerRef = useRef(null);
+  const checkOutPickerRef = useRef(null);
 
   // Set default dates and filters
   useEffect(() => {
@@ -94,18 +97,24 @@ export default function Apartments({ apartments = {}, filters = {} }) {
     setFilteredApartments(filtered);
   }, [apartments, searchQuery, sortBy, checkIn, checkOut, showDatePrompt]);
 
-  // Close date pickers when clicking outside
+  // Close date pickers when clicking outside (fix for mobile)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest(".date-picker-container")) {
-        setShowCheckInPicker(false);
-        setShowCheckOutPicker(false);
+      // Jika klik pada input date di dalam picker, jangan close
+      if (
+        (checkInPickerRef.current && checkInPickerRef.current.contains(event.target)) ||
+        (checkOutPickerRef.current && checkOutPickerRef.current.contains(event.target))
+      ) {
+        return;
       }
+      setShowCheckInPicker(false);
+      setShowCheckOutPicker(false);
     };
-
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
 
@@ -273,7 +282,10 @@ export default function Apartments({ apartments = {}, filters = {} }) {
                   </button>
                 </div>
                 {showCheckInPicker && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10 w-full">
+                  <div
+                    ref={checkInPickerRef}
+                    className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10 w-full"
+                  >
                     <input
                       type="date"
                       value={checkIn}
@@ -356,7 +368,10 @@ export default function Apartments({ apartments = {}, filters = {} }) {
                   </button>
                 </div>
                 {showCheckOutPicker && (
-                  <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10 w-full">
+                  <div
+                    ref={checkOutPickerRef}
+                    className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10 w-full"
+                  >
                     <input
                       type="date"
                       value={checkOut}

@@ -646,4 +646,16 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get available payment methods (for frontend)
+     */
+    public function getPaymentMethods()
+    {
+        $methods = config('payment_methods');
+        return response()->json([
+            'success' => true,
+            'methods' => $methods,
+        ]);
+    }
 }

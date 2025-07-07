@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +14,7 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .header {
             background: #4F46E5;
             color: white;
@@ -20,23 +22,27 @@
             text-align: center;
             border-radius: 8px 8px 0 0;
         }
+
         .content {
             background: #f9f9f9;
             padding: 30px;
             border: 1px solid #ddd;
         }
+
         .booking-details {
             background: white;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
+
         .detail-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
         }
+
         .amount {
             font-size: 24px;
             font-weight: bold;
@@ -44,6 +50,7 @@
             text-align: center;
             margin: 20px 0;
         }
+
         .footer {
             background: #374151;
             color: white;
@@ -54,6 +61,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>🎉 Booking Confirmed!</h1>
@@ -62,42 +70,42 @@
 
     <div class="content">
         <h2>Hello {{ $transaction->customer_name }},</h2>
-        
+
         <p>Great news! Your payment has been successfully processed and your booking is confirmed.</p>
 
         <div class="booking-details">
             <h3>Booking Details</h3>
-            
+
             <div class="detail-row">
                 <span><strong>Order ID:</strong></span>
                 <span>{{ $transaction->order_id }}</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Apartment:</strong></span>
                 <span>{{ $transaction->booking_data['apartment_name'] ?? 'Apartment' }}</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Guest Name:</strong></span>
                 <span>{{ $transaction->customer_name }}</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Check-in:</strong></span>
                 <span>{{ \Carbon\Carbon::parse($transaction->check_in)->format('d M Y') }}</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Check-out:</strong></span>
                 <span>{{ \Carbon\Carbon::parse($transaction->check_out)->format('d M Y') }}</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Duration:</strong></span>
                 <span>{{ $transaction->nights }} night(s)</span>
             </div>
-            
+
             <div class="detail-row">
                 <span><strong>Payment Method:</strong></span>
                 <span>{{ strtoupper($transaction->payment_method) }}</span>
@@ -116,11 +124,12 @@
         </ul>
 
         <p>If you have any questions, feel free to contact us at hello@apart-app.com</p>
-        
+
         <p>We look forward to hosting you!</p>
-        
+
         <p>Best regards,<br>
-        <strong>Lilo Apart Team</strong></p>
+            <strong>Lilo Apart Team</strong>
+        </p>
     </div>
 
     <div class="footer">
@@ -128,4 +137,5 @@
         <p>This is an automated email, please do not reply directly to this message.</p>
     </div>
 </body>
+
 </html>
