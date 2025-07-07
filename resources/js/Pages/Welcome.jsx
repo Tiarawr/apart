@@ -10,6 +10,9 @@ import {
     Home,
 } from "lucide-react";
 
+// Simple fade/slide animation using framer-motion
+import { motion } from "framer-motion";
+
 export default function Welcome({ apartments = [] }) {
     // Take first 3 apartments from backend data
     const featuredApartments = apartments.slice(0, 3).map(apartment => ({
@@ -30,26 +33,46 @@ export default function Welcome({ apartments = [] }) {
             >
                 <Header />
 
-                {/* Hero Section */}
-                <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white pt-20 lg:pt-24">
+                {/* Hero Section with animation */}
+                <motion.section
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white pt-20 lg:pt-24"
+                >
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-5">
                         <div className="absolute top-10 left-10 w-72 h-72 bg-black rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
                         <div className="absolute top-40 right-20 w-96 h-96 bg-gray-600 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
                     </div>
-                    
+
                     <div className="relative container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16 lg:py-32">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
                             {/* Left Content */}
-                            <div className="text-center lg:text-left">
+                            <motion.div
+                                initial={{ opacity: 0, x: -40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="text-center lg:text-left"
+                            >
                                 {/* Badge */}
-                                <div className="inline-flex items-center gap-2 bg-black text-white rounded-full px-4 sm:px-6 py-2 mb-4 sm:mb-6 text-sm font-medium">
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                    className="inline-flex items-center gap-2 bg-black text-white rounded-full px-4 sm:px-6 py-2 mb-4 sm:mb-6 text-sm font-medium"
+                                >
                                     <Star size={16} className="text-yellow-400" />
                                     Apartemen Terbaik di Jogja
-                                </div>
+                                </motion.div>
 
                                 {/* Main Heading */}
-                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 sm:mb-6 leading-tight">
+                                <motion.h1
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.7, delay: 0.4 }}
+                                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 sm:mb-6 leading-tight"
+                                >
                                     Liburan ke Jogja?
                                     <br />
                                     <span className="text-gray-600">
@@ -59,17 +82,27 @@ export default function Welcome({ apartments = [] }) {
                                     <span className="bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
                                         di Sini!
                                     </span>
-                                </h1>
+                                </motion.h1>
 
                                 {/* Subtitle */}
-                                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto lg:mx-0 leading-relaxed px-4 sm:px-0">
+                                <motion.p
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.7, delay: 0.6 }}
+                                    className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto lg:mx-0 leading-relaxed px-4 sm:px-0"
+                                >
                                     Dari Malioboro sampai Kaliurang – booking dalam
                                     2 menit, tanpa ribet. Nikmati kenyamanan seperti
                                     di rumah sendiri dengan harga terjangkau.
-                                </p>
+                                </motion.p>
 
                                 {/* Stats */}
-                                <div className="grid grid-cols-3 gap-4 md:gap-8 mb-8 sm:mb-10 max-w-md mx-auto lg:mx-0">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.7, delay: 0.8 }}
+                                    className="grid grid-cols-3 gap-4 md:gap-8 mb-8 sm:mb-10 max-w-md mx-auto lg:mx-0"
+                                >
                                     <div className="text-center lg:text-left">
                                         <div className="text-xl sm:text-2xl md:text-3xl font-bold text-black">
                                             {apartments.length}+
@@ -94,10 +127,15 @@ export default function Welcome({ apartments = [] }) {
                                             Happy Guest
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
 
                                 {/* CTA Buttons */}
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center px-4 sm:px-0">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.7, delay: 1.0 }}
+                                    className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center px-4 sm:px-0"
+                                >
                                     <Link
                                         href="/apartments"
                                         className="bg-black text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium w-full sm:min-w-[200px] hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg text-center"
@@ -110,11 +148,16 @@ export default function Welcome({ apartments = [] }) {
                                     >
                                         Hubungi Kami
                                     </Link>
-                                </div>
-                            </div>
+                                </motion.div>
+                            </motion.div>
 
                             {/* Right Content - Hero Image */}
-                            <div className="relative mt-8 lg:mt-0">
+                            <motion.div
+                                initial={{ opacity: 0, x: 40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8, delay: 0.3 }}
+                                className="relative mt-8 lg:mt-0"
+                            >
                                 <div className="relative z-10">
                                     <img
                                         src="https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
@@ -123,25 +166,41 @@ export default function Welcome({ apartments = [] }) {
                                     />
                                 </div>
                                 {/* Floating Cards */}
-                                <div className="absolute -top-2 sm:-top-4 -left-2 sm:-left-4 bg-white rounded-lg p-3 sm:p-4 shadow-lg border border-gray-200">
+                                <motion.div
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 1.1 }}
+                                    className="absolute -top-2 sm:-top-4 -left-2 sm:-left-4 bg-white rounded-lg p-3 sm:p-4 shadow-lg border border-gray-200"
+                                >
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                         <span className="text-xs sm:text-sm font-medium text-gray-700">Live Booking</span>
                                     </div>
-                                </div>
-                                <div className="absolute -bottom-2 sm:-bottom-4 -right-2 sm:-right-4 bg-white rounded-lg p-3 sm:p-4 shadow-lg border border-gray-200">
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 1.2 }}
+                                    className="absolute -bottom-2 sm:-bottom-4 -right-2 sm:-right-4 bg-white rounded-lg p-3 sm:p-4 shadow-lg border border-gray-200"
+                                >
                                     <div className="flex items-center gap-2">
                                         <Star size={16} className="text-yellow-400 fill-current" />
                                         <span className="text-xs sm:text-sm font-medium text-gray-700">4.8/5 Rating</span>
                                     </div>
-                                </div>
-                            </div>
+                                </motion.div>
+                            </motion.div>
                         </div>
                     </div>
-                </section>
+                </motion.section>
 
-                {/* Features Section */}
-                <section className="container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16">
+                {/* Features Section with animation */}
+                <motion.section
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16"
+                >
                     <div className="text-center mb-8 sm:mb-12">
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
                             Kenapa Pilih Lilo Apart?
@@ -152,7 +211,13 @@ export default function Welcome({ apartments = [] }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300"
+                        >
                             <div className="flex items-center justify-center mb-3">
                                 <MapPin size={28} className="text-black sm:w-8 sm:h-8" />
                             </div>
@@ -162,9 +227,15 @@ export default function Welcome({ apartments = [] }) {
                             <p className="text-xs sm:text-sm text-gray-600">
                                 Dekat dengan tempat wisata
                             </p>
-                        </div>
+                        </motion.div>
 
-                        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300"
+                        >
                             <div className="flex items-center justify-center mb-3">
                                 <Shield size={28} className="text-black sm:w-8 sm:h-8" />
                             </div>
@@ -174,9 +245,15 @@ export default function Welcome({ apartments = [] }) {
                             <p className="text-xs sm:text-sm text-gray-600">
                                 Keamanan terjamin
                             </p>
-                        </div>
+                        </motion.div>
 
-                        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-all duration-300"
+                        >
                             <div className="flex items-center justify-center mb-3">
                                 <Home size={28} className="text-black sm:w-8 sm:h-8" />
                             </div>
@@ -186,12 +263,18 @@ export default function Welcome({ apartments = [] }) {
                             <p className="text-xs sm:text-sm text-gray-600">
                                 Nyaman seperti rumah
                             </p>
-                        </div>
+                        </motion.div>
                     </div>
-                </section>
+                </motion.section>
 
-                {/* Popular Apartments Section */}
-                <section className="container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16 bg-gray-50">
+                {/* Popular Apartments Section with animation */}
+                <motion.section
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16 bg-gray-50"
+                >
                     <div className="text-center mb-8 sm:mb-12">
                         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
                             Apartemen Populer
@@ -204,17 +287,27 @@ export default function Welcome({ apartments = [] }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         {featuredApartments.map((apartment, index) => (
-                            <div
+                            <motion.div
                                 key={apartment.id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.1 * index }}
                                 className="transform transition-all duration-300 hover:scale-105"
                             >
                                 <ApartmentCard apartment={apartment} />
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
 
                     {/* View All Button */}
-                    <div className="text-center mt-8 sm:mt-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                        className="text-center mt-8 sm:mt-12"
+                    >
                         <Link
                             href="/apartments"
                             className="border border-black text-black px-6 sm:px-8 py-3 rounded-lg font-medium w-full sm:w-auto max-w-sm hover:bg-black hover:text-white transition-all duration-300 flex items-center gap-2 justify-center"
@@ -222,8 +315,8 @@ export default function Welcome({ apartments = [] }) {
                             Lihat Semua Apartemen
                             <ArrowRight size={18} />
                         </Link>
-                    </div>
-                </section>
+                    </motion.div>
+                </motion.section>
 
                 {/* Kuliner & Sewa Motor Section */}
                 <section className="container mx-auto px-4 sm:px-6 lg:px-16 py-12 sm:py-16 bg-white">

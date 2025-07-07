@@ -28,6 +28,7 @@ export default function Contact() {
         });
     };
 
+    const [showAlert, setShowAlert] = useState(false);
     const handleSubmit = (e) => {
         e.preventDefault();
         // Handle form submission here
@@ -40,7 +41,8 @@ export default function Contact() {
             subject: "",
             message: "",
         });
-        alert("Pesan berhasil dikirim! Kami akan menghubungi Anda segera.");
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
     };
 
     return (
@@ -208,141 +210,150 @@ export default function Contact() {
                                 </div>
                             </div>
 
-                            {/* Contact Form */}
-                            <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
-                                <h2 className="text-2xl font-bold text-black mb-6">
-                                    Kirim Pesan
-                                </h2>
-                                <form
-                                    onSubmit={handleSubmit}
-                                    className="space-y-4"
-                                >
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Nama Lengkap
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                                                    placeholder="Masukkan nama Anda"
-                                                />
-                                                <User
-                                                    size={18}
-                                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Email
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    required
-                                                    className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                                                    placeholder="nama@email.com"
-                                                />
-                                                <Mail
-                                                    size={18}
-                                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Nomor Telepon
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={formData.phone}
-                                                onChange={handleChange}
-                                                className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                                                placeholder="08123456789"
-                                            />
-                                            <Phone
-                                                size={18}
-                                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Subjek
-                                        </label>
-                                        <select
-                                            name="subject"
-                                            value={formData.subject}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                                        >
-                                            <option value="">
-                                                Pilih subjek
-                                            </option>
-                                            <option value="booking">
-                                                Booking Apartemen
-                                            </option>
-                                            <option value="inquiry">
-                                                Pertanyaan Umum
-                                            </option>
-                                            <option value="complaint">
-                                                Keluhan/Saran
-                                            </option>
-                                            <option value="partnership">
-                                                Kerjasama
-                                            </option>
-                                            <option value="other">
-                                                Lainnya
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Pesan
-                                        </label>
-                                        <div className="relative">
-                                            <textarea
-                                                name="message"
-                                                value={formData.message}
-                                                onChange={handleChange}
-                                                required
-                                                rows={4}
-                                                className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
-                                                placeholder="Tulis pesan Anda di sini..."
-                                            />
-                                            <MessageSquare
-                                                size={18}
-                                                className="absolute left-3 top-4 text-gray-400"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Send size={18} />
-                                        Kirim Pesan
-                                    </button>
-                                </form>
+                {/* Contact Form */}
+                <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm relative">
+                    {showAlert && (
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-xs">
+                            <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <span>Pesan berhasil dikirim! Kami akan menghubungi Anda segera.</span>
                             </div>
+                        </div>
+                    )}
+                    <h2 className="text-2xl font-bold text-black mb-6">
+                        Kirim Pesan
+                    </h2>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-4"
+                    >
+                        {/* ...existing code... */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Lengkap
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                        placeholder="Masukkan nama Anda"
+                                    />
+                                    <User
+                                        size={18}
+                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                        placeholder="nama@email.com"
+                                    />
+                                    <Mail
+                                        size={18}
+                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor Telepon
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                                    placeholder="08123456789"
+                                />
+                                <Phone
+                                    size={18}
+                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Subjek
+                            </label>
+                            <select
+                                name="subject"
+                                value={formData.subject}
+                                onChange={handleChange}
+                                required
+                                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            >
+                                <option value="">
+                                    Pilih subjek
+                                </option>
+                                <option value="booking">
+                                    Booking Apartemen
+                                </option>
+                                <option value="inquiry">
+                                    Pertanyaan Umum
+                                </option>
+                                <option value="complaint">
+                                    Keluhan/Saran
+                                </option>
+                                <option value="partnership">
+                                    Kerjasama
+                                </option>
+                                <option value="other">
+                                    Lainnya
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Pesan
+                            </label>
+                            <div className="relative">
+                                <textarea
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
+                                    rows={4}
+                                    className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                                    placeholder="Tulis pesan Anda di sini..."
+                                />
+                                <MessageSquare
+                                    size={18}
+                                    className="absolute left-3 top-4 text-gray-400"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Send size={18} />
+                            Kirim Pesan
+                        </button>
+                    </form>
+                </div>
                         </div>
                     </div>
                 </section>
